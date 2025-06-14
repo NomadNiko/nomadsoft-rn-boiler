@@ -1,16 +1,19 @@
 import { forwardRef } from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const HeaderButton = forwardRef<typeof Pressable, { onPress?: () => void }>(
   ({ onPress }, ref) => {
+    const { isDark } = useTheme();
+    
     return (
       <Pressable onPress={onPress}>
         {({ pressed }) => (
-          <FontAwesome
-            name="info-circle"
+          <Ionicons
+            name="skull"
             size={25}
-            color="gray"
+            color={isDark ? '#E5E7EB' : '#4B5563'}
             style={[
               styles.headerRight,
               {

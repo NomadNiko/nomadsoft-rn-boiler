@@ -1,24 +1,36 @@
 import { forwardRef } from 'react';
 import { Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
+import { components, getThemeStyles } from '../styles/globalStyles';
 
 type ButtonProps = {
-  title: string;
+  title?: string;
+  children?: React.ReactNode;
 } & TouchableOpacityProps;
 
-export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps }, ref) => {
-  return (
-    <TouchableOpacity
-      ref={ref}
-      {...touchableProps}
-      className={`${styles.button} ${touchableProps.className}`}>
-      <Text className={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-});
+export const Button = forwardRef<View, ButtonProps>(
+  ({ title, children, ...touchableProps }, ref) => {
+    const { isDark } = useTheme();
+    const themeStyles = getThemeStyles(isDark);
+    
+    // If className is provided, use it; otherwise use default button styles
+    const buttonClass = touchableProps.className || `${components.button.base} ${components.button.primary.solid}`;
+
+    return (
+      <TouchableOpacity
+        ref={ref}
+        {...touchableProps}
+        className={buttonClass}>
+        {children || (
+          <Text className="text-center text-white font-semibold">
+            {title}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  }
+);
 
 Button.displayName = 'Button';
 
-const styles = {
-  button: 'items-center bg-indigo-500 rounded-[28px] shadow-md p-4',
-  buttonText: 'text-white text-lg font-semibold text-center',
-};
+export default Button;
