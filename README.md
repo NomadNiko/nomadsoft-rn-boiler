@@ -1,7 +1,7 @@
 # Nomadsoft React Native Boilerplate
 
 <div align="center">
-  <img src="assets/images/nomadsoft.png" alt="Nomadsoft Logo" width="200" />
+  <img src="assets/nomadsoft.png" alt="Nomadsoft Logo" width="200" />
   
   <h3>A modern React Native starter template</h3>
   
@@ -66,6 +66,7 @@ The app uses React Navigation with a hierarchical structure:
 ### Component Architecture
 
 Components follow a consistent pattern:
+
 - TypeScript interfaces for props
 - NativeWind for styling (className prop)
 - Exported props interfaces for reusability
@@ -182,6 +183,7 @@ npm run prebuild
 ### Branding
 
 Replace assets in `/assets/images/` with your own:
+
 - `nomadsoft.png` - Company logo
 - `icon.png` - App icon
 - `splash-icon.png` - Splash screen icon
@@ -189,6 +191,7 @@ Replace assets in `/assets/images/` with your own:
 ### Theme
 
 Modify `tailwind.config.js` to customize:
+
 - Colors
 - Spacing
 - Typography
@@ -197,6 +200,7 @@ Modify `tailwind.config.js` to customize:
 ### Navigation
 
 Edit `/navigation/AppNavigator.tsx` to:
+
 - Add new screens
 - Modify tab structure
 - Configure navigation options
