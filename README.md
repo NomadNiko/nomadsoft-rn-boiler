@@ -1,7 +1,7 @@
 # Nomadsoft React Native Boilerplate
 
 <div align="center">
-  <img src="assets/nomadsoft.png" alt="Nomadsoft Logo" width="200" />
+  <img src="https://github.com/NomadNiko/nomadsoft-rn-boiler/blob/main/assets/adaptive-icon.png" alt="Nomadsoft Logo" width="200" />
   
   <h3>A modern React Native starter template</h3>
   
