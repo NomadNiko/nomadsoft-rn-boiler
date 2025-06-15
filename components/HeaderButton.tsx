@@ -2,18 +2,20 @@ import { forwardRef } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { getThemeStyles } from '../styles/globalStyles';
 
 export const HeaderButton = forwardRef<typeof Pressable, { onPress?: () => void }>(
   ({ onPress }, ref) => {
     const { isDark } = useTheme();
-    
+    const theme = getThemeStyles(isDark);
+
     return (
       <Pressable onPress={onPress}>
         {({ pressed }) => (
           <Ionicons
             name="skull"
             size={25}
-            color={isDark ? '#E5E7EB' : '#4B5563'}
+            color={theme.iconColors.close}
             style={[
               styles.headerRight,
               {

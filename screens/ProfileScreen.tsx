@@ -1,9 +1,25 @@
-import { Text, View, Image, ScrollView } from 'react-native';
+import { View, Image } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { getThemeStyles, layout, components } from '../styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
+import {
+  ScreenScroll,
+  ProfileCard,
+  Card,
+  H2,
+  H4,
+  BodyText,
+  LabelText,
+  Row,
+  ListItem,
+  Badge,
+  Divider,
+  ErrorText,
+} from '../components/styled';
 
 export default function ProfileScreen() {
   const { isDark } = useTheme();
+  const theme = getThemeStyles(isDark);
 
   const profileStats = [
     { label: 'Projects', value: '12', icon: 'folder-outline' },
@@ -21,98 +37,73 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <ScrollView className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <View className="px-4 py-6">
+    <ScreenScroll>
+      <View className={layout.container.padded}>
         {/* Profile Header Card */}
-        <View className={`rounded-3xl p-6 mt-8 items-center ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-xl`}>
-          <View className={`${isDark ? 'bg-gray-700' : 'bg-gray-200'} mb-4 rounded-full p-1`}>
+        <ProfileCard>
+          <View
+            className={`${theme.colors.background.tertiary} ${components.image.profileWrapper} ${components.utils.p1}`}>
             <Image
               source={require('../assets/nomadsoft-black-centered.png')}
-              className="h-32 w-32 rounded-full"
+              className={components.image.profile}
               resizeMode="contain"
             />
           </View>
-          <Text className={`text-2xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
-            John Nomad
-          </Text>
-          <Text className={`text-base ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6`}>
-            john@nomadsoft.us
-          </Text>
+          <H2 className={components.spacing.mb1}>John Nomad</H2>
+          <BodyText className={components.spacing.mb6}>john@nomadsoft.us</BodyText>
 
           {/* Stats */}
-          <View className="w-full flex-row justify-around">
+          <View className={`${components.utils.wFull} ${layout.flex.row} ${layout.flex.around}`}>
             {profileStats.map((stat, index) => (
-              <View key={index} className="items-center">
-                <Ionicons
-                  name={stat.icon as any}
-                  size={24}
-                  color={isDark ? '#A78BFA' : '#6366F1'}
-                />
-                <Text className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} mt-2`}>
-                  {stat.value}
-                </Text>
-                <Text className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {stat.label}
-                </Text>
+              <View key={index} className={components.utils.itemsCenter}>
+                <Ionicons name={stat.icon as any} size={24} color={theme.iconColors.primary} />
+                <H4 className={components.spacing.mt2}>{stat.value}</H4>
+                <LabelText>{stat.label}</LabelText>
               </View>
             ))}
           </View>
-        </View>
+        </ProfileCard>
 
         {/* Profile Options */}
-        <View className={`rounded-2xl p-4 mt-6 ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+        <Card>
           {profileItems.map((item, index) => (
             <View key={index}>
-              <View className="px-4 py-3 flex-row items-center justify-between">
-                <View className="flex-row items-center">
+              <ListItem>
+                <Row className={components.utils.itemsCenter}>
                   <Ionicons
                     name={item.icon as any}
                     size={24}
-                    color={item.isError ? '#EF4444' : (isDark ? '#A78BFA' : '#6366F1')}
+                    color={item.isError ? theme.iconColors.error : theme.iconColors.primary}
                   />
-                  <Text
-                    className={`text-base ml-3 ${
-                      item.isError 
-                        ? 'text-red-600' 
-                        : (isDark ? 'text-gray-100' : 'text-gray-900')
-                    }`}>
-                    {item.title}
-                  </Text>
-                </View>
-                <Ionicons 
-                  name="chevron-forward" 
-                  size={20} 
-                  color={isDark ? '#6B7280' : '#9CA3AF'} 
-                />
-              </View>
-              {index < profileItems.length - 1 && (
-                <View className={`h-[1px] mx-4 ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`} />
-              )}
+                  {item.isError ? (
+                    <ErrorText className={components.spacing.ml3}>{item.title}</ErrorText>
+                  ) : (
+                    <BodyText className={`${components.spacing.ml3} ${theme.colors.text.primary}`}>
+                      {item.title}
+                    </BodyText>
+                  )}
+                </Row>
+                <Ionicons name="chevron-forward" size={20} color={theme.iconColors.secondary} />
+              </ListItem>
+              {index < profileItems.length - 1 && <Divider />}
             </View>
           ))}
-        </View>
+        </Card>
 
         {/* Badge Examples */}
-        <View className={`rounded-2xl p-4 mt-6 ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
-          <Text className={`text-lg font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'} mb-3`}>
+        <Card>
+          <BodyText
+            className={`text-lg font-medium ${theme.colors.text.primary} ${components.spacing.mb3}`}>
             Status Badges
-          </Text>
-          <View className="flex-row flex-wrap gap-2">
-            <View className="px-3 py-1 rounded-full bg-indigo-100">
-              <Text className="text-indigo-700">Pro Member</Text>
-            </View>
-            <View className="px-3 py-1 rounded-full bg-purple-100">
-              <Text className="text-purple-700">Verified</Text>
-            </View>
-            <View className="px-3 py-1 rounded-full bg-green-100">
-              <Text className="text-green-700">Active</Text>
-            </View>
-            <View className="px-3 py-1 rounded-full bg-yellow-100">
-              <Text className="text-yellow-700">2 Pending</Text>
-            </View>
-          </View>
-        </View>
+          </BodyText>
+          <Row className={`${components.utils.flexWrap} ${components.spacing.gap2}`}>
+            <Badge variant="indigo">Pro Member</Badge>
+            <Badge variant="purple">Verified</Badge>
+            <Badge variant="green">Active</Badge>
+            <Badge variant="yellow">2 Pending</Badge>
+          </Row>
+        </Card>
       </View>
-    </ScrollView>
+    </ScreenScroll>
   );
 }
