@@ -21,6 +21,8 @@ interface AuthContextType {
   isLoading: boolean;
   user: User | null;
   checkSession: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
+  updateUser: (user: User) => void;
   signOut: () => Promise<void>;
 }
 
@@ -35,10 +37,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('AuthContext: Starting session check');
       setIsLoading(true);
-      
+
       // Initialize auth service
       await authService.init();
-      
+
       const sessionExists = await authService.checkSession();
       console.log('AuthContext: Session exists:', sessionExists);
       setIsAuthenticated(sessionExists);
@@ -60,6 +62,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const refreshUserData = async () => {
+    try {
+      if (isAuthenticated) {
+        console.log('AuthContext: Refreshing user data');
+        const userInfo = await authService.getCurrentUser();
+        console.log('AuthContext: Refreshed user info:', userInfo);
+        setUser(userInfo);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
+  const updateUser = (user: User) => {
+    setUser(user);
+  };
+
   const signOut = async () => {
     try {
       await authService.logout();
@@ -75,7 +94,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, checkSession, signOut }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        isLoading,
+        user,
+        checkSession,
+        refreshUserData,
+        updateUser,
+        signOut,
+      }}>
       {children}
     </AuthContext.Provider>
   );

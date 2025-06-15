@@ -58,10 +58,10 @@ class AuthService {
       }
 
       const data: LoginResponse = await response.json();
-      
+
       // Store tokens
       await this.storeTokens(data.token, data.refreshToken);
-      
+
       return data;
     } catch (error) {
       console.error('Login error:', error);
@@ -69,15 +69,20 @@ class AuthService {
     }
   }
 
-  async register(email: string, password: string, firstName?: string, lastName?: string): Promise<any> {
+  async register(
+    email: string,
+    password: string,
+    firstName?: string,
+    lastName?: string
+  ): Promise<any> {
     try {
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.register}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          email, 
+        body: JSON.stringify({
+          email,
           password,
           firstName: firstName || '',
           lastName: lastName || '',
@@ -112,10 +117,10 @@ class AuthService {
       }
 
       const data: LoginResponse = await response.json();
-      
+
       // Store tokens
       await this.storeTokens(data.token, data.refreshToken);
-      
+
       return data;
     } catch (error) {
       console.error('Google login error:', error);
@@ -130,7 +135,7 @@ class AuthService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.token}`,
+            Authorization: `Bearer ${this.token}`,
           },
         });
       }
@@ -151,7 +156,7 @@ class AuthService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       });
 
@@ -184,7 +189,7 @@ class AuthService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.refreshToken}`,
+          Authorization: `Bearer ${this.refreshToken}`,
         },
       });
 
@@ -195,7 +200,7 @@ class AuthService {
 
       const data: LoginResponse = await response.json();
       await this.storeTokens(data.token, data.refreshToken);
-      
+
       return true;
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -235,6 +240,98 @@ class AuthService {
     this.refreshToken = null;
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('refreshToken');
+  }
+
+  async uploadFile(file: {
+    uri: string;
+    name: string;
+    type: string;
+  }): Promise<{ id: string; path: string }> {
+    try {
+      if (!this.token) {
+        throw new Error('Not authenticated');
+      }
+
+      console.log('Uploading file to:', `${API_CONFIG.baseUrl}${API_CONFIG.apiPath}/files/upload`);
+      console.log('With token:', this.token.substring(0, 20) + '...');
+
+      // Create FormData for file upload (matching mantine-boilerplate)
+      const formData = new FormData();
+      formData.append('file', {
+        uri: file.uri,
+        name: file.name,
+        type: file.type.includes('image') ? file.type : 'image/jpeg',
+      } as any);
+
+      const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.apiPath}/files/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          // Don't set Content-Type for FormData - let the browser set it with boundary
+        },
+        body: formData,
+      });
+
+      console.log('Upload response status:', response.status);
+      const responseText = await response.text();
+      console.log('Upload response text:', responseText);
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}: ${responseText}`);
+      }
+
+      try {
+        const data = JSON.parse(responseText);
+        // Return just the file object, not the wrapper
+        return data.file || data;
+      } catch (parseError) {
+        console.error('Failed to parse upload response:', parseError);
+        throw new Error('Invalid response format from file upload');
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+      throw error;
+    }
+  }
+
+  async updateProfile(updates: {
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    email?: string;
+    photo?: { id: string; path: string } | null;
+  }): Promise<User> {
+    try {
+      if (!this.token) {
+        throw new Error('Not authenticated');
+      }
+
+      console.log('Updating profile with:', JSON.stringify(updates, null, 2));
+
+      const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.me}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      console.log('Profile update response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Profile update error response:', errorText);
+        throw new Error(`Profile update failed: ${response.status} - ${errorText}`);
+      }
+
+      const updatedUser = await response.json();
+      console.log('Profile update successful:', updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
   }
 
   getToken(): string | null {

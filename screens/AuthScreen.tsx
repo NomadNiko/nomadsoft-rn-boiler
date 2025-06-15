@@ -88,19 +88,19 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     try {
       console.log('AuthScreen: Starting Google auth process');
-      
+
       // For Expo Go, we'll show a message about Google Sign-In limitations
       Alert.alert(
         'Google Sign-In',
         'Google Sign-In works in production builds but has limitations in Expo Go. You can test with email/password login using:\n\nEmail: aloha@ixplor.app\nPassword: password',
         [{ text: 'OK' }]
       );
-      
+
       // In production, you would:
       // 1. Configure Google Sign-In
       // 2. Get the idToken
       // 3. Send it to your backend
-      
+
       // Example implementation (for production):
       /*
       import { GoogleSignin } from '@react-native-google-signin/google-signin';

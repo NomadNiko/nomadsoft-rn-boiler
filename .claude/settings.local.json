@@ -13,7 +13,10 @@
       "Bash(npx expo install:*)",
       "WebFetch(domain:supertokens.com)",
       "Bash(npm uninstall:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(sudo chown:*)",
+      "Bash(npm start)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
