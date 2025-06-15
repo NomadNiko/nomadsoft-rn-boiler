@@ -52,7 +52,7 @@ class AuthService {
 
       if (data.status === 'OK') {
         console.log('Auth successful, handling auth success');
-        await this.handleAuthSuccess(response);
+        await this.handleAuthSuccess(response, data);
       }
 
       return data;
@@ -103,7 +103,7 @@ class AuthService {
 
       if (data.status === 'OK') {
         console.log('Auth successful, handling auth success');
-        await this.handleAuthSuccess(response);
+        await this.handleAuthSuccess(response, data);
       }
 
       return data;
@@ -137,7 +137,7 @@ class AuthService {
       // Check if we have session info stored locally first
       const sessionData = await AsyncStorage.getItem('supertokens-session');
       console.log('Local session data:', sessionData);
-      
+
       if (!sessionData) {
         console.log('No local session data found');
         return false;
@@ -147,8 +147,8 @@ class AuthService {
       // Only verify with server if session data exists for some time
       const sessionTime = await AsyncStorage.getItem('supertokens-session-time');
       const now = Date.now();
-      
-      if (!sessionTime || (now - parseInt(sessionTime)) < 5000) {
+
+      if (!sessionTime || now - parseInt(sessionTime) < 5000) {
         // Session is recent (less than 5 seconds), trust it
         console.log('Recent session, trusting local data');
         return true;
@@ -164,7 +164,7 @@ class AuthService {
       });
 
       console.log('Session check response status:', response.status);
-      
+
       if (response.ok) {
         console.log('Session is valid');
         return true;
@@ -182,18 +182,66 @@ class AuthService {
     }
   }
 
-  private async handleAuthSuccess(response: Response) {
+  async getUserInfo() {
+    try {
+      const response = await fetch(`${SUPERTOKENS_CONFIG.apiDomain}/sessioninfo`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('User info response:', data);
+        return {
+          id: data.userId,
+          email: data.accessTokenPayload?.email || 'user@example.com',
+          emails: data.accessTokenPayload?.emails || ['user@example.com'],
+        };
+      } else {
+        // Fallback to stored user data if available
+        const storedUserData = await AsyncStorage.getItem('user-data');
+        if (storedUserData) {
+          return JSON.parse(storedUserData);
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error('Get user info error:', error);
+      // Fallback to stored user data if available
+      const storedUserData = await AsyncStorage.getItem('user-data');
+      if (storedUserData) {
+        return JSON.parse(storedUserData);
+      }
+      return null;
+    }
+  }
+
+  private async handleAuthSuccess(response: Response, authData?: any) {
     // For SuperTokens, tokens are managed via httpOnly cookies
     // We just need to store a flag that we have an active session
     await AsyncStorage.setItem('supertokens-session', 'active');
     await AsyncStorage.setItem('supertokens-session-time', Date.now().toString());
+
+    // Store user data if available from auth response
+    if (authData?.user) {
+      const userData = {
+        id: authData.user.id,
+        email: authData.user.emails?.[0] || authData.user.email || 'user@example.com',
+        emails: authData.user.emails || [authData.user.email || 'user@example.com'],
+      };
+      await AsyncStorage.setItem('user-data', JSON.stringify(userData));
+      console.log('Stored user data:', userData);
+    }
 
     // Extract any user info from the response if available
     const frontToken = response.headers.get('front-token');
     if (frontToken) {
       await AsyncStorage.setItem('front-token', frontToken);
     }
-    
+
     console.log('Auth success handled, session stored');
   }
 
@@ -201,6 +249,7 @@ class AuthService {
     this.tokens = {};
     await AsyncStorage.removeItem('supertokens-session');
     await AsyncStorage.removeItem('supertokens-session-time');
+    await AsyncStorage.removeItem('user-data');
     await AsyncStorage.removeItem('front-token');
     await AsyncStorage.removeItem('accessToken');
     await AsyncStorage.removeItem('refreshToken');

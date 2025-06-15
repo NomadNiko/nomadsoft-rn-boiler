@@ -7,7 +7,6 @@ import {
   ScreenScroll,
   ProfileCard,
   Card,
-  H2,
   H4,
   BodyText,
   LabelText,
@@ -20,7 +19,7 @@ import {
 
 export default function ProfileScreen() {
   const { isDark } = useTheme();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const theme = getThemeStyles(isDark);
 
   const profileStats = [
@@ -58,8 +57,10 @@ export default function ProfileScreen() {
               resizeMode="contain"
             />
           </View>
-          <H2 className={components.spacing.mb1}>John Nomad</H2>
-          <BodyText className={components.spacing.mb6}>john@nomadsoft.us</BodyText>
+          <BodyText
+            className={`${components.spacing.mb6} text-lg font-medium ${theme.colors.text.primary}`}>
+            {user?.email || 'user@example.com'}
+          </BodyText>
 
           {/* Stats */}
           <View className={`${components.utils.wFull} ${layout.flex.row} ${layout.flex.around}`}>

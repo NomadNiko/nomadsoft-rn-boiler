@@ -8,7 +8,8 @@
       "Bash(find:*)",
       "Bash(rg:*)",
       "Bash(npx tsc:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

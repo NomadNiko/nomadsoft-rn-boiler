@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeStyles } from '../utils/theme';
+import { getThemeStyles } from '../styles/globalStyles';
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/auth';
 import { StackNavigationProp } from '@react-navigation/stack';
+import ThemeToggle from '../components/ThemeToggle';
 
 type AuthScreenNavigationProp = StackNavigationProp<any, 'Auth'>;
 
@@ -24,7 +25,7 @@ interface AuthScreenProps {
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
-  const { isDarkMode } = useTheme();
+  const { isDark } = useTheme();
   const { checkSession } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -32,7 +33,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const themeStyles = getThemeStyles(isDarkMode);
+  const themeStyles = getThemeStyles(isDark);
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -101,7 +102,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${themeStyles.background.primary}`}>
+    <SafeAreaView className={`flex-1 ${themeStyles.colors.background.primary}`}>
+      {/* Theme Toggle Button */}
+      <View className="absolute right-4 top-12 z-10">
+        <ThemeToggle size={28} />
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1">
@@ -111,10 +117,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           className="flex-1">
           <View className="flex-1 justify-center px-6">
             <View className="mb-8">
-              <Text className={`mb-2 text-center text-3xl font-bold ${themeStyles.text.primary}`}>
+              <Text
+                className={`mb-2 text-center text-3xl font-bold ${themeStyles.colors.text.primary}`}>
                 {isSignUp ? 'Create Account' : 'Welcome Back'}
               </Text>
-              <Text className={`text-center text-base ${themeStyles.text.secondary}`}>
+              <Text className={`text-center text-base ${themeStyles.colors.text.secondary}`}>
                 {isSignUp
                   ? 'Sign up to get started with Nomadsoft'
                   : 'Sign in to continue to Nomadsoft'}
@@ -123,17 +130,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
             <View className="space-y-4">
               <View>
-                <Text className={`mb-2 text-sm font-medium ${themeStyles.text.primary}`}>
+                <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
                   Email
                 </Text>
                 <TextInput
                   className={`rounded-2xl px-4 py-3 text-base ${
-                    isDarkMode
+                    isDark
                       ? 'border-gray-600 bg-gray-700 text-gray-100'
                       : 'border-gray-200 bg-gray-100 text-gray-900'
                   } border`}
                   placeholder="Enter your email"
-                  placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
+                  placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -143,17 +150,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               </View>
 
               <View>
-                <Text className={`mb-2 text-sm font-medium ${themeStyles.text.primary}`}>
+                <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
                   Password
                 </Text>
                 <TextInput
                   className={`rounded-2xl px-4 py-3 text-base ${
-                    isDarkMode
+                    isDark
                       ? 'border-gray-600 bg-gray-700 text-gray-100'
                       : 'border-gray-200 bg-gray-100 text-gray-900'
                   } border`}
                   placeholder="Enter your password"
-                  placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
+                  placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
@@ -163,17 +170,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
               {isSignUp && (
                 <View>
-                  <Text className={`mb-2 text-sm font-medium ${themeStyles.text.primary}`}>
+                  <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
                     Confirm Password
                   </Text>
                   <TextInput
                     className={`rounded-2xl px-4 py-3 text-base ${
-                      isDarkMode
+                      isDark
                         ? 'border-gray-600 bg-gray-700 text-gray-100'
                         : 'border-gray-200 bg-gray-100 text-gray-900'
                     } border`}
                     placeholder="Confirm your password"
-                    placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
+                    placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry
@@ -185,7 +192,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               <TouchableOpacity
                 className={`mt-4 rounded-2xl py-4 ${
                   isLoading ? 'opacity-50' : ''
-                } ${isDarkMode ? 'bg-purple-600' : 'bg-indigo-600'}`}
+                } ${isDark ? 'bg-purple-600' : 'bg-indigo-600'}`}
                 onPress={handleAuth}
                 disabled={isLoading}>
                 {isLoading ? (
@@ -198,7 +205,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
 
               <View className="mt-6 flex-row justify-center">
-                <Text className={themeStyles.text.secondary}>
+                <Text className={themeStyles.colors.text.secondary}>
                   {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
                 </Text>
                 <TouchableOpacity
@@ -209,9 +216,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     setConfirmPassword('');
                   }}>
                   <Text
-                    className={`font-semibold ${
-                      isDarkMode ? 'text-purple-400' : 'text-indigo-600'
-                    }`}>
+                    className={`font-semibold ${isDark ? 'text-purple-400' : 'text-indigo-600'}`}>
                     {isSignUp ? 'Sign In' : 'Sign Up'}
                   </Text>
                 </TouchableOpacity>
