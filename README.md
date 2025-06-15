@@ -3,216 +3,357 @@
 <div align="center">
   <img src="https://github.com/NomadNiko/nomadsoft-rn-boiler/blob/main/assets/adaptive-icon.png" alt="Nomadsoft Logo" width="200" />
   
-  <h3>A modern React Native starter template</h3>
+  <h3>A production-ready React Native starter with authentication & theming</h3>
   
   <p>
     <a href="https://nomadsoft.us/">Nomadsoft</a> • 
-    Built with <a href="https://rn.new/">create-expo-stack</a>
+    Built with React Native & Expo
   </p>
 </div>
 
 ## Overview
 
-This is a production-ready React Native boilerplate designed to accelerate mobile app development. It provides a solid foundation with TypeScript, Expo, and NativeWind (Tailwind CSS for React Native) pre-configured.
+This is a **production-ready React Native boilerplate** that goes far beyond a basic starter template. It includes complete authentication, advanced theming, custom fonts, and a comprehensive UI component system - everything you need to build professional mobile applications.
 
-## Features
+## ✨ Key Features
 
-- 🚀 **Expo SDK 53** - Latest Expo managed workflow
-- 📱 **Cross-platform** - iOS, Android, and Web support
-- 🎨 **NativeWind** - Tailwind CSS styling for React Native
-- 📝 **TypeScript** - Full type safety with strict mode
-- 🧭 **React Navigation** - Tab and stack navigation pre-configured
-- 🎯 **ESLint & Prettier** - Code quality and formatting tools
-- 📦 **Optimized assets** - Image optimization and splash screen setup
+### 🔐 **Complete Authentication System**
+- **SuperTokens Integration** - Email/password authentication with secure backend
+- **Protected Navigation** - Conditional routing based on authentication state
+- **Session Management** - Persistent sessions with automatic validation
+- **Login/Signup UI** - Professional authentication screens with password visibility toggles
 
-## Architecture
+### 🎨 **Advanced Theme System**
+- **Dark/Light Mode** - System-wide theming with instant switching
+- **Persistent Preferences** - Theme choice saved across app restarts
+- **Navigation Theming** - Headers, tabs, and modals adapt to selected theme
+- **Component Integration** - All UI components automatically use theme context
+
+### 🔤 **Custom Typography**
+- **Oxanium Google Fonts** - Modern, professional font family throughout the app
+- **Multiple Weights** - Light, Regular, Medium, SemiBold, Bold, ExtraBold
+- **Optimized Loading** - Fonts loaded with proper loading states
+- **Tailwind Integration** - Custom font classes available throughout
+
+### 🧩 **Professional UI Components**
+- **25+ Styled Components** - Complete UI library with consistent theming
+- **Type-Safe Props** - Full TypeScript interfaces for all components
+- **Responsive Design** - Works perfectly on iOS, Android, and Web
+- **Theme-Aware** - All components automatically adapt to light/dark themes
+
+### 📱 **Modern Tech Stack**
+- **React Native 0.79.3** - Latest React Native with Expo 53
+- **TypeScript 5.8.3** - Strict mode with comprehensive type safety
+- **NativeWind** - Tailwind CSS for React Native with custom configuration
+- **React Navigation 7** - Professional navigation with stack and tab navigators
+
+## 🏗️ Architecture
 
 ### Project Structure
 
 ```
 nomadsoft-rn-boiler/
-├── App.tsx                 # Application entry point
-├── app.json               # Expo configuration
-├── assets/                # Images, icons, and fonts
-│   ├── fonts/            # Custom fonts (if any)
-│   └── images/           # App images and branding
-├── components/            # Reusable UI components
-│   ├── Button.tsx        # Custom button component
-│   ├── Container.tsx     # Layout container
-│   ├── TabBarIcon.tsx    # Navigation tab icons
-│   └── ...
-├── navigation/            # Navigation configuration
-│   ├── AppNavigator.tsx  # Root navigator setup
-│   └── types.ts          # Navigation TypeScript types
-├── screens/              # Screen components
-│   ├── NomadsoftScreen.tsx
-│   ├── ProfileScreen.tsx
-│   └── NomadsoftTestPopup.tsx
-├── styles/               # Global styles
-│   └── index.ts         # Shared style constants
-└── global.css           # Global CSS with NativeWind
+├── App.tsx                      # Application entry point with font loading
+├── app.json                    # Expo configuration
+├── assets/                     # Images, icons, and branding
+├── components/
+│   ├── styled/                 # Complete UI component library
+│   │   └── index.tsx          # 25+ styled components
+│   ├── Button.tsx             # Generic button component
+│   ├── ThemeToggle.tsx        # Theme switcher component
+│   └── TabBarIcon.tsx         # Navigation icons
+├── contexts/
+│   ├── AuthContext.tsx        # Authentication state management
+│   └── ThemeContext.tsx       # Theme state with persistence
+├── hooks/
+│   └── useFonts.ts           # Oxanium font loading hook
+├── navigation/
+│   ├── index.tsx             # Root navigation with auth routing
+│   └── tab-navigator.tsx     # Bottom tab navigation
+├── screens/
+│   ├── AuthScreen.tsx        # Complete login/signup UI
+│   ├── NomadsoftScreen.tsx   # Home screen with branding
+│   ├── ProfileScreen.tsx     # User profile with settings
+│   └── NomadsoftTestPopup.tsx # Modal example
+├── services/
+│   ├── auth.ts              # SuperTokens authentication service
+│   └── simpleAuth.ts        # Fallback authentication (backup)
+├── styles/
+│   └── globalStyles.ts      # Comprehensive styling system
+├── utils/
+│   └── theme.ts            # Theme utility functions
+├── config/
+│   └── supertokens.ts      # SuperTokens configuration
+├── global.css              # Global styles with NativeWind
+└── tailwind.config.js      # Custom Tailwind config with fonts
 ```
 
-### Navigation Architecture
+### Authentication Flow
 
-The app uses React Navigation with a hierarchical structure:
-
-- **Root Stack Navigator** - Handles modal presentations
-  - **Tab Navigator** - Bottom tabs for main app sections
-    - **Home Stack** - Stack navigator for home section
-      - NomadsoftScreen (main screen)
-    - **Profile Tab** - Direct screen (ProfileScreen)
+```
+App Launch
+    ↓
+Font Loading → Loading Screen
+    ↓
+Theme Context → Load saved preferences
+    ↓
+Auth Context → Check session validity
+    ↓
+Navigation Router → Conditional routing
+    ↓
+Auth Screen ←→ Main App (Tabs)
+```
 
 ### Component Architecture
 
-Components follow a consistent pattern:
+All components follow a consistent pattern:
 
-- TypeScript interfaces for props
-- NativeWind for styling (className prop)
-- Exported props interfaces for reusability
-- Functional components with hooks
+```typescript
+interface ComponentProps {
+  // TypeScript interface for props
+}
 
-### Styling System
+export const Component = ({ ...props }: ComponentProps) => {
+  const { isDark } = useTheme(); // Automatic theme integration
+  const theme = getThemeStyles(isDark);
+  
+  return (
+    <View className={`${theme.colors.background.primary} ${className}`}>
+      {/* NativeWind styling with theme classes */}
+    </View>
+  );
+};
+```
 
-- **NativeWind**: Tailwind CSS utilities for React Native
-- **Custom colors**: Defined in `tailwind.config.js`
-- **Global styles**: Base styles in `global.css`
-- **Component styles**: Inline className with Tailwind utilities
+## 🛠️ Dependencies
 
-## Dependencies
+### Core Framework
+```json
+{
+  "@expo/vector-icons": "^14.0.0",
+  "expo": "^53.0.11",
+  "expo-font": "~13.3.1",
+  "expo-status-bar": "~2.2.3",
+  "react": "19.0.0",
+  "react-native": "0.79.3",
+  "typescript": "~5.8.3"
+}
+```
 
-### Core Dependencies
-
-- **expo** (~53.0.0) - Development platform
-- **react** (18.3.1) - UI framework
-- **react-native** (0.76.5) - Mobile framework
-- **typescript** (^5.3.3) - Type safety
+### Authentication & Storage
+```json
+{
+  "supertokens-react-native": "^5.1.3",
+  "supertokens-web-js": "^0.15.0",
+  "@react-native-async-storage/async-storage": "^2.2.0"
+}
+```
 
 ### Navigation
+```json
+{
+  "@react-navigation/bottom-tabs": "^7.0.5",
+  "@react-navigation/native": "^7.0.3",
+  "@react-navigation/stack": "^7.0.4",
+  "react-native-gesture-handler": "~2.24.0",
+  "react-native-safe-area-context": "5.4.0",
+  "react-native-screens": "~4.11.1"
+}
+```
 
-- **@react-navigation/native** (^7.0.14)
-- **@react-navigation/stack** (^7.0.18)
-- **@react-navigation/bottom-tabs** (^7.0.14)
-
-### Styling
-
-- **nativewind** (^4.0.1) - Tailwind CSS for React Native
-- **tailwindcss** (^3.4.0) - CSS framework
+### Styling & Fonts
+```json
+{
+  "@expo-google-fonts/oxanium": "^0.4.1",
+  "nativewind": "latest",
+  "tailwindcss": "^3.4.0"
+}
+```
 
 ### Development Tools
+```json
+{
+  "eslint": "^9.25.1",
+  "eslint-config-expo": "^9.2.0",
+  "eslint-config-prettier": "^10.1.2",
+  "prettier": "^3.2.5",
+  "prettier-plugin-tailwindcss": "^0.5.11"
+}
+```
 
-- **eslint** (^8.57.0) - Linting
-- **prettier** (^3.3.3) - Code formatting
-- **eslint-config-expo** (~8.0.0) - Expo ESLint config
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Expo Go app (for device testing)
-- iOS Simulator (Mac only) or Android Emulator
+- **Node.js** (v18 or higher)
+- **npm** or **yarn**
+- **Expo Go** app for device testing
+- **iOS Simulator** (Mac) or **Android Emulator**
 
 ### Installation
 
 ```bash
 # Clone the repository
 git clone [your-repo-url]
-
-# Navigate to project directory
 cd nomadsoft-rn-boiler
 
 # Install dependencies
 npm install
-```
 
-### Running the App
-
-```bash
 # Start the development server
 npm start
-
-# Run on iOS
-npm run ios
-
-# Run on Android
-npm run android
-
-# Run on Web
-npm run web
 ```
 
 ### Development Commands
 
 ```bash
-# Check code quality
-npm run lint
+# Platform-specific commands
+npm run ios        # Run on iOS simulator
+npm run android    # Run on Android emulator  
+npm run web        # Run in web browser
 
-# Format code
-npm run format
-
-# Generate native projects (if needed)
-npm run prebuild
+# Development tools
+npm run lint       # Check code quality
+npm run format     # Format code with Prettier
+npm run prebuild   # Generate native projects
 ```
 
-## Current State
+## 🎯 Current Implementation Status
 
-### ✅ Implemented
+### ✅ **Fully Implemented**
 
-- Basic navigation structure with tabs and stack
-- TypeScript configuration with strict mode
-- NativeWind styling system
-- ESLint and Prettier setup
-- Sample screens and components
-- Nomadsoft branding
+**Authentication System:**
+- ✅ SuperTokens integration with live backend
+- ✅ Email/password authentication
+- ✅ Session management and persistence
+- ✅ Protected navigation routing
+- ✅ User profile management
+- ✅ Login/signup UI with password toggles
 
-### 🚧 Not Yet Implemented
+**UI & Design:**
+- ✅ Dark/light theme system with persistence
+- ✅ Oxanium custom fonts throughout
+- ✅ 25+ styled components library
+- ✅ Responsive design (iOS/Android/Web)
+- ✅ Professional authentication screens
+- ✅ User profile with settings
 
-- Testing framework (Jest, React Native Testing Library)
-- State management (Redux, MobX, Zustand)
-- API integration layer
-- Authentication flow
-- Environment configuration
-- CI/CD pipeline
-- Error boundary
-- Offline support
+**Architecture:**
+- ✅ TypeScript strict mode
+- ✅ Context providers for state management
+- ✅ Modern React Navigation setup
+- ✅ NativeWind styling system
+- ✅ Error handling and loading states
+- ✅ Production-ready code structure
 
-## Customization
+**Development Tools:**
+- ✅ ESLint + Prettier configuration
+- ✅ Tailwind CSS with custom config
+- ✅ Font loading with proper states
+- ✅ Component-based architecture
+
+### 🔄 **Ready for Extension**
+
+The boilerplate provides a solid foundation for adding:
+
+- **API Integration** - Extend auth service for additional endpoints
+- **State Management** - Add Redux/Zustand for complex state
+- **Testing** - Jest and React Native Testing Library setup
+- **Push Notifications** - Expo Notifications integration
+- **Offline Support** - Add offline-first capabilities
+- **CI/CD Pipeline** - GitHub Actions or similar
+- **Error Monitoring** - Sentry or similar service integration
+
+## 🎨 Customization
 
 ### Branding
 
-Replace assets in `/assets/images/` with your own:
+Replace assets in `/assets/` with your own:
+- Update Nomadsoft branding to your company
+- Replace logos and icons
+- Modify splash screen assets
 
-- `nomadsoft.png` - Company logo
-- `icon.png` - App icon
-- `splash-icon.png` - Splash screen icon
+### Theming
 
-### Theme
+Customize the theme system in `/styles/globalStyles.ts`:
 
-Modify `tailwind.config.js` to customize:
+```typescript
+export const colors = {
+  light: {
+    background: {
+      primary: 'bg-white',        // Customize colors
+      secondary: 'bg-gray-50',
+      tertiary: 'bg-gray-200',
+    },
+    // ... more theme options
+  }
+};
+```
 
-- Colors
-- Spacing
-- Typography
-- Custom utilities
+### Typography
 
-### Navigation
+Add new font weights or families in `/tailwind.config.js`:
 
-Edit `/navigation/AppNavigator.tsx` to:
+```javascript
+fontFamily: {
+  'custom-font': ['YourCustomFont-Regular'],
+  // ... existing Oxanium fonts
+}
+```
 
-- Add new screens
-- Modify tab structure
-- Configure navigation options
+### Authentication
 
-## Contributing
+Configure SuperTokens in `/config/supertokens.ts`:
 
-This boilerplate is maintained by [Nomadsoft](https://nomadsoft.us/). For questions or support, please visit our website.
+```typescript
+export const SUPERTOKENS_CONFIG = {
+  apiDomain: 'your-backend-domain.com',
+  apiBasePath: '/auth',
+};
+```
 
-## Credits
+## 🧪 Backend Requirements
 
-This boilerplate was initially created using [create-expo-stack](https://rn.new/), an excellent tool for bootstrapping React Native projects.
+This boilerplate connects to a SuperTokens backend. You'll need:
 
-## License
+1. **SuperTokens Backend** - Running with EmailPassword recipe
+2. **CORS Configuration** - Allow your app domain
+3. **HTTPS Domain** - Required for production authentication
+
+Example backend setup available in the SuperTokens documentation.
+
+## 📱 Screenshots & Demo
+
+The boilerplate includes:
+- **Professional login/signup screens** with password visibility toggles
+- **Dark/light theme switching** throughout the entire app
+- **User profile screen** with settings and sign-out functionality
+- **Branded home screen** showcasing the component library
+- **Modal presentations** and proper navigation flow
+
+## 🤝 Contributing
+
+This boilerplate is maintained by [Nomadsoft](https://nomadsoft.us/). 
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Follow the established code patterns
+4. Ensure all TypeScript types are properly defined
+5. Test on iOS, Android, and Web
+6. Submit a pull request
+
+## 📄 License
 
 © 2024 [Nomadsoft](https://nomadsoft.us/). All rights reserved.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by the Nomadsoft team</p>
+  <p>
+    <a href="https://nomadsoft.us/">Website</a> • 
+    <a href="https://github.com/nomadsoft">GitHub</a>
+  </p>
+</div>
