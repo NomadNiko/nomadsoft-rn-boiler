@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/auth';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ThemeToggle from '../components/ThemeToggle';
+import { Ionicons } from '@expo/vector-icons';
 
 type AuthScreenNavigationProp = StackNavigationProp<any, 'Auth'>;
 
@@ -32,6 +33,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const themeStyles = getThemeStyles(isDark);
 
@@ -118,10 +121,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           <View className="flex-1 justify-center px-6">
             <View className="mb-8">
               <Text
-                className={`mb-2 text-center text-3xl font-bold ${themeStyles.colors.text.primary}`}>
+                className={`mb-2 text-center font-oxanium-bold text-3xl ${themeStyles.colors.text.primary}`}>
                 {isSignUp ? 'Create Account' : 'Welcome Back'}
               </Text>
-              <Text className={`text-center text-base ${themeStyles.colors.text.secondary}`}>
+              <Text
+                className={`text-center font-oxanium-regular text-base ${themeStyles.colors.text.secondary}`}>
                 {isSignUp
                   ? 'Sign up to get started with Nomadsoft'
                   : 'Sign in to continue to Nomadsoft'}
@@ -130,15 +134,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
             <View className="space-y-4">
               <View>
-                <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
+                <Text
+                  className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
                   Email
                 </Text>
                 <TextInput
-                  className={`rounded-2xl px-4 py-3 text-base ${
+                  className={`rounded-2xl px-4 py-4 text-base leading-6 ${
                     isDark
                       ? 'border-gray-600 bg-gray-700 text-gray-100'
                       : 'border-gray-200 bg-gray-100 text-gray-900'
                   } border`}
+                  style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
                   placeholder="Enter your email"
                   placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
                   value={email}
@@ -150,42 +156,70 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               </View>
 
               <View>
-                <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
+                <Text
+                  className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
                   Password
                 </Text>
-                <TextInput
-                  className={`rounded-2xl px-4 py-3 text-base ${
-                    isDark
-                      ? 'border-gray-600 bg-gray-700 text-gray-100'
-                      : 'border-gray-200 bg-gray-100 text-gray-900'
-                  } border`}
-                  placeholder="Enter your password"
-                  placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-
-              {isSignUp && (
-                <View>
-                  <Text className={`mb-2 text-sm font-medium ${themeStyles.colors.text.primary}`}>
-                    Confirm Password
-                  </Text>
+                <View className="relative">
                   <TextInput
-                    className={`rounded-2xl px-4 py-3 text-base ${
+                    className={`rounded-2xl px-4 py-4 pr-12 text-base leading-6 ${
                       isDark
                         ? 'border-gray-600 bg-gray-700 text-gray-100'
                         : 'border-gray-200 bg-gray-100 text-gray-900'
                     } border`}
-                    placeholder="Confirm your password"
+                    style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                    placeholder="Enter your password"
                     placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
                     autoCapitalize="none"
                   />
+                  <TouchableOpacity
+                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={{ top: '50%', marginTop: -12 }}>
+                    <Ionicons
+                      name={showPassword ? 'eye-off' : 'eye'}
+                      size={24}
+                      color={isDark ? '#9CA3AF' : '#6B7280'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {isSignUp && (
+                <View>
+                  <Text
+                    className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                    Confirm Password
+                  </Text>
+                  <View className="relative">
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 pr-12 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50 }}
+                      placeholder="Confirm your password"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
+                      autoCapitalize="none"
+                    />
+                    <TouchableOpacity
+                      className="absolute right-4 top-1/2 -translate-y-1/2"
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{ top: '50%', marginTop: -12 }}>
+                      <Ionicons
+                        name={showConfirmPassword ? 'eye-off' : 'eye'}
+                        size={24}
+                        color={isDark ? '#9CA3AF' : '#6B7280'}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
 
@@ -198,14 +232,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                 {isLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text className="text-center text-base font-semibold text-white">
+                  <Text className="text-center font-oxanium-semibold text-base text-white">
                     {isSignUp ? 'Sign Up' : 'Sign In'}
                   </Text>
                 )}
               </TouchableOpacity>
 
               <View className="mt-6 flex-row justify-center">
-                <Text className={themeStyles.colors.text.secondary}>
+                <Text className={`font-oxanium-regular ${themeStyles.colors.text.secondary}`}>
                   {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
                 </Text>
                 <TouchableOpacity
@@ -216,7 +250,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     setConfirmPassword('');
                   }}>
                   <Text
-                    className={`font-semibold ${isDark ? 'text-purple-400' : 'text-indigo-600'}`}>
+                    className={`font-oxanium-semibold ${isDark ? 'text-purple-400' : 'text-indigo-600'}`}>
                     {isSignUp ? 'Sign In' : 'Sign Up'}
                   </Text>
                 </TouchableOpacity>

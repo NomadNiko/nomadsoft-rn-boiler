@@ -35,6 +35,10 @@ const MainStack = () => {
             backgroundColor: theme.navigationColors.headerBackground,
           },
           headerTintColor: theme.navigationColors.headerTint,
+          headerTitleStyle: {
+            fontFamily: 'Oxanium-SemiBold',
+            fontSize: 18,
+          },
         }}
       />
     </Stack.Navigator>
