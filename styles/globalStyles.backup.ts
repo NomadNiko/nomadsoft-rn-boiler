@@ -41,17 +41,22 @@ export const colors = {
     text: {
       primary: 'text-gray-900',
       secondary: 'text-gray-600',
+      muted: 'text-gray-400',
       white: 'text-white',
+      indigo: 'text-indigo-700',
       purple: 'text-purple-600',
       error: 'text-red-600',
       blue: 'text-blue-500',
     },
     border: {
+      primary: 'border-gray-200',
       secondary: 'border-gray-600',
       purple: 'border-purple-600',
     },
     bg: {
       gray100: 'bg-gray-100',
+      gray200: 'bg-gray-200',
+      indigo600: 'bg-indigo-600',
     },
   },
   dark: {
@@ -63,17 +68,22 @@ export const colors = {
     text: {
       primary: 'text-gray-100',
       secondary: 'text-gray-400',
+      muted: 'text-gray-600',
       white: 'text-white',
+      indigo: 'text-indigo-400',
       purple: 'text-purple-400',
       error: 'text-red-600',
       blue: 'text-blue-400',
     },
     border: {
+      primary: 'border-gray-700',
       secondary: 'border-gray-600',
       purple: 'border-purple-400',
     },
     bg: {
+      gray600: 'bg-gray-600',
       gray700: 'bg-gray-700',
+      indigo600: 'bg-indigo-600',
     },
   },
 };
@@ -82,6 +92,7 @@ export const colors = {
 export const components = {
   // Container styles
   container: {
+    card: 'rounded-3xl p-6 items-center',
     modal: 'rounded-3xl shadow-2xl mt-20 p-6',
     profileCard: 'rounded-3xl p-6 mt-8 items-center shadow-xl',
     paper: 'rounded-2xl p-4 mt-6 shadow-md',
@@ -112,6 +123,7 @@ export const components = {
 
   // Divider styles
   divider: {
+    horizontal: 'h-[1px]',
     nomadsoftDivider: 'h-[1px] w-32 my-4',
     listDivider: 'h-[1px] mx-4',
   },
@@ -151,12 +163,15 @@ export const components = {
     flex1: 'flex-1',
     spaceY4: 'space-y-4',
     p1: 'p-1',
+    p2: 'p-2',
+    p6: 'p-6',
   },
 
   // Shadow styles
   shadow: {
     md: 'shadow-md',
     xl: 'shadow-xl',
+    '2xl': 'shadow-2xl',
   },
 
   // Spacing
@@ -168,11 +183,15 @@ export const components = {
     mt4: 'mt-4',
     mt6: 'mt-6',
     mt8: 'mt-8',
+    mt20: 'mt-20',
     mb1: 'mb-1',
     mb2: 'mb-2',
     mb3: 'mb-3',
+    mb4: 'mb-4',
     mb6: 'mb-6',
     ml3: 'ml-3',
+    my4: 'my-4',
+    mx4: 'mx-4',
   },
 
   // Color palette demo
@@ -205,7 +224,6 @@ export const iconColors = {
     close: '#4B5563',
     error: '#EF4444',
     sun: '#4338CA',
-    moon: '#4338CA',
     blue: '#007AFF',
   },
   dark: {
@@ -213,7 +231,6 @@ export const iconColors = {
     secondary: '#6B7280',
     close: '#E5E7EB',
     error: '#EF4444',
-    sun: '#FCD34D',
     moon: '#FCD34D',
     blue: '#60A5FA',
   },

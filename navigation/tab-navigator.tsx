@@ -9,6 +9,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import NomadsoftScreen from '../screens/NomadsoftScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../contexts/ThemeContext';
+import { getThemeStyles } from '../styles/globalStyles';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,20 +17,21 @@ type Props = StackScreenProps<RootStackParamList, 'TabNavigator'>;
 
 export default function TabLayout({ navigation }: Props) {
   const { isDark } = useTheme();
+  const theme = getThemeStyles(isDark);
 
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: isDark ? '#A78BFA' : '#6366F1',
-        tabBarInactiveTintColor: isDark ? '#9CA3AF' : '#6B7280',
+        tabBarActiveTintColor: theme.navigationColors.tabBarActive,
+        tabBarInactiveTintColor: theme.navigationColors.tabBarInactive,
         tabBarStyle: {
-          backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-          borderTopColor: isDark ? '#374151' : '#E5E7EB',
+          backgroundColor: theme.navigationColors.tabBarBackground,
+          borderTopColor: theme.navigationColors.tabBarBorder,
         },
         headerStyle: {
-          backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+          backgroundColor: theme.navigationColors.headerBackground,
         },
-        headerTintColor: isDark ? '#F3F4F6' : '#111827',
+        headerTintColor: theme.navigationColors.headerTint,
       }}>
       <Tab.Screen
         name="Nomadsoft"

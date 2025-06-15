@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useTheme } from '../contexts/ThemeContext';
+import { getThemeStyles } from '../styles/globalStyles';
 
 import NomadsoftTestPopup from '../screens/NomadsoftTestPopup';
 import TabNavigator from './tab-navigator';
@@ -14,7 +15,8 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 export default function RootStack() {
   const { isDark } = useTheme();
-  
+  const theme = getThemeStyles(isDark);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="TabNavigator">
@@ -26,13 +28,13 @@ export default function RootStack() {
         <Stack.Screen
           name="NomadsoftTestPopup"
           component={NomadsoftTestPopup}
-          options={{ 
-            presentation: 'modal', 
+          options={{
+            presentation: 'modal',
             headerLeft: () => null,
             headerStyle: {
-              backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+              backgroundColor: theme.navigationColors.headerBackground,
             },
-            headerTintColor: isDark ? '#F3F4F6' : '#111827',
+            headerTintColor: theme.navigationColors.headerTint,
           }}
         />
       </Stack.Navigator>
