@@ -1,5 +1,6 @@
-import { View, Image } from 'react-native';
+import { View, Image, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getThemeStyles, layout, components } from '../styles/globalStyles';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -19,6 +20,7 @@ import {
 
 export default function ProfileScreen() {
   const { isDark } = useTheme();
+  const { signOut } = useAuth();
   const theme = getThemeStyles(isDark);
 
   const profileStats = [
@@ -35,6 +37,13 @@ export default function ProfileScreen() {
     { title: 'Help & Support', icon: 'help-circle-outline' },
     { title: 'Sign Out', icon: 'log-out-outline', isError: true },
   ];
+
+  const handleItemPress = (item: { title: string }) => {
+    if (item.title === 'Sign Out') {
+      signOut();
+    }
+    // Handle other items here as needed
+  };
 
   return (
     <ScreenScroll>
@@ -68,23 +77,26 @@ export default function ProfileScreen() {
         <Card>
           {profileItems.map((item, index) => (
             <View key={index}>
-              <ListItem>
-                <Row className={components.utils.itemsCenter}>
-                  <Ionicons
-                    name={item.icon as any}
-                    size={24}
-                    color={item.isError ? theme.iconColors.error : theme.iconColors.primary}
-                  />
-                  {item.isError ? (
-                    <ErrorText className={components.spacing.ml3}>{item.title}</ErrorText>
-                  ) : (
-                    <BodyText className={`${components.spacing.ml3} ${theme.colors.text.primary}`}>
-                      {item.title}
-                    </BodyText>
-                  )}
-                </Row>
-                <Ionicons name="chevron-forward" size={20} color={theme.iconColors.secondary} />
-              </ListItem>
+              <TouchableOpacity onPress={() => handleItemPress(item)}>
+                <ListItem>
+                  <Row className={components.utils.itemsCenter}>
+                    <Ionicons
+                      name={item.icon as any}
+                      size={24}
+                      color={item.isError ? theme.iconColors.error : theme.iconColors.primary}
+                    />
+                    {item.isError ? (
+                      <ErrorText className={components.spacing.ml3}>{item.title}</ErrorText>
+                    ) : (
+                      <BodyText
+                        className={`${components.spacing.ml3} ${theme.colors.text.primary}`}>
+                        {item.title}
+                      </BodyText>
+                    )}
+                  </Row>
+                  <Ionicons name="chevron-forward" size={20} color={theme.iconColors.secondary} />
+                </ListItem>
+              </TouchableOpacity>
               {index < profileItems.length - 1 && <Divider />}
             </View>
           ))}
