@@ -49,16 +49,34 @@ export default function ProfileScreen() {
       <View className={layout.container.padded}>
         {/* Profile Header Card */}
         <ProfileCard>
-          <View
-            className={`${theme.colors.background.tertiary} ${components.image.profileWrapper} ${components.utils.p1}`}>
-            <Image
-              source={require('../assets/nomadsoft-black-centered.png')}
-              className={components.image.profile}
-              resizeMode="contain"
-            />
-          </View>
+          {user?.photo?.path ? (
+            <View className={`${components.image.profileWrapper} ${components.utils.p1}`}>
+              <Image
+                source={{ uri: user.photo.path }}
+                className={components.image.profile}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <View
+              className={`${theme.colors.background.tertiary} ${components.image.profileWrapper} ${components.utils.p1}`}>
+              <Image
+                source={require('../assets/nomadsoft-black-centered.png')}
+                className={components.image.profile}
+                resizeMode="contain"
+              />
+            </View>
+          )}
           <BodyText
-            className={`${components.spacing.mb6} text-lg font-medium ${theme.colors.text.primary}`}>
+            className={`text-lg font-medium ${theme.colors.text.primary}`}>
+            {user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user?.username 
+              ? user.username
+              : 'User'}
+          </BodyText>
+          <BodyText
+            className={`${components.spacing.mb6} text-sm ${theme.colors.text.secondary}`}>
             {user?.email || 'user@example.com'}
           </BodyText>
 

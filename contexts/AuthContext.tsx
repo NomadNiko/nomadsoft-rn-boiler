@@ -1,10 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import authService from '../services/auth';
+import authService from '../services/authService';
 
 interface User {
   id: string;
   email: string;
-  emails: string[];
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  photo?: {
+    id: string;
+    path: string;
+  };
+  role?: {
+    id: string;
+  };
 }
 
 interface AuthContextType {
@@ -26,6 +35,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('AuthContext: Starting session check');
       setIsLoading(true);
+      
+      // Initialize auth service
+      await authService.init();
+      
       const sessionExists = await authService.checkSession();
       console.log('AuthContext: Session exists:', sessionExists);
       setIsAuthenticated(sessionExists);
@@ -33,7 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (sessionExists) {
         // Get user info if session exists
-        const userInfo = await authService.getUserInfo();
+        const userInfo = await authService.getCurrentUser();
         console.log('AuthContext: User info:', userInfo);
         setUser(userInfo);
       } else {
@@ -49,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signOut = async () => {
     try {
-      await authService.signOut();
+      await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
     } catch (error) {

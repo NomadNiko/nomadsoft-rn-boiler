@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { getThemeStyles } from '../styles/globalStyles';
 import { useAuth } from '../contexts/AuthContext';
-import authService from '../services/auth';
+import authService from '../services/authService';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ThemeToggle from '../components/ThemeToggle';
 import { Ionicons } from '@expo/vector-icons';
@@ -54,51 +54,71 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
     try {
       console.log('AuthScreen: Starting auth process, isSignUp:', isSignUp);
       if (isSignUp) {
-        console.log('AuthScreen: Calling signUp');
-        const response = await authService.signUp(email, password);
-        console.log('AuthScreen: SignUp response:', response);
-
-        if (response.status === 'OK') {
-          console.log('AuthScreen: SignUp successful, checking session');
-          await checkSession();
-          console.log('AuthScreen: Session check completed');
-          // The auth screen will be automatically replaced by the navigation logic
-        } else if (response.status === 'FIELD_ERROR') {
-          const errors =
-            response.formFields?.map((field: any) => field.error).join('\n') ||
-            'Please check your email and password';
-          Alert.alert('Sign Up Error', errors);
-        } else if (response.status === 'SIGN_UP_NOT_ALLOWED') {
-          Alert.alert('Error', response.reason || 'Sign up not allowed');
-        } else {
-          Alert.alert('Error', 'Sign up failed. Please try again.');
-        }
+        console.log('AuthScreen: Calling register');
+        // For now, we'll show a message about registration
+        Alert.alert(
+          'Registration',
+          'Please sign up on our website first, then use the app to log in.',
+          [{ text: 'OK' }]
+        );
+        // In a full implementation, you'd call:
+        // await authService.register(email, password);
       } else {
-        console.log('AuthScreen: Calling signIn');
-        const response = await authService.signIn(email, password);
-        console.log('AuthScreen: SignIn response:', response);
+        console.log('AuthScreen: Calling login');
+        const response = await authService.login(email, password);
+        console.log('AuthScreen: Login response:', response);
 
-        if (response.status === 'OK') {
-          console.log('AuthScreen: SignIn successful, checking session');
+        if (response.token) {
+          console.log('AuthScreen: Login successful, checking session');
           await checkSession();
           console.log('AuthScreen: Session check completed');
           // The auth screen will be automatically replaced by the navigation logic
-        } else if (response.status === 'FIELD_ERROR') {
-          const errors =
-            response.formFields?.map((field: any) => field.error).join('\n') ||
-            'Please check your email and password';
-          Alert.alert('Sign In Error', errors);
-        } else if (response.status === 'WRONG_CREDENTIALS_ERROR') {
-          Alert.alert('Error', 'Invalid email or password');
-        } else if (response.status === 'SIGN_IN_NOT_ALLOWED') {
-          Alert.alert('Error', response.reason || 'Sign in not allowed');
-        } else {
-          Alert.alert('Error', 'Sign in failed. Please try again.');
         }
       }
     } catch (error) {
       console.error('Auth error:', error);
       Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setIsLoading(true);
+
+    try {
+      console.log('AuthScreen: Starting Google auth process');
+      
+      // For Expo Go, we'll show a message about Google Sign-In limitations
+      Alert.alert(
+        'Google Sign-In',
+        'Google Sign-In works in production builds but has limitations in Expo Go. You can test with email/password login using:\n\nEmail: aloha@ixplor.app\nPassword: password',
+        [{ text: 'OK' }]
+      );
+      
+      // In production, you would:
+      // 1. Configure Google Sign-In
+      // 2. Get the idToken
+      // 3. Send it to your backend
+      
+      // Example implementation (for production):
+      /*
+      import { GoogleSignin } from '@react-native-google-signin/google-signin';
+      
+      GoogleSignin.configure({
+        webClientId: GOOGLE_SIGN_IN_CONFIG.webClientId,
+      });
+      
+      const { idToken } = await GoogleSignin.signIn();
+      const response = await authService.googleLogin(idToken);
+      
+      if (response.token) {
+        await checkSession();
+      }
+      */
+    } catch (error) {
+      console.error('Google auth error:', error);
+      Alert.alert('Error', 'An unexpected error occurred during Google authentication');
     } finally {
       setIsLoading(false);
     }
@@ -236,6 +256,32 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     {isSignUp ? 'Sign Up' : 'Sign In'}
                   </Text>
                 )}
+              </TouchableOpacity>
+
+              {/* Divider */}
+              <View className="my-6 flex-row items-center">
+                <View className={`h-px flex-1 ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`} />
+                <Text
+                  className={`mx-4 font-oxanium-regular text-sm ${themeStyles.colors.text.secondary}`}>
+                  or
+                </Text>
+                <View className={`h-px flex-1 ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`} />
+              </View>
+
+              {/* Google Sign In Button */}
+              <TouchableOpacity
+                className={`flex-row items-center justify-center rounded-2xl py-4 ${
+                  isLoading ? 'opacity-50' : ''
+                } ${isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-white'} border`}
+                onPress={handleGoogleAuth}
+                disabled={isLoading}>
+                <View className="mr-3">
+                  <Text className="text-xl">🔍</Text>
+                </View>
+                <Text
+                  className={`font-oxanium-semibold text-base ${themeStyles.colors.text.primary}`}>
+                  Continue with Google
+                </Text>
               </TouchableOpacity>
 
               <View className="mt-6 flex-row justify-center">

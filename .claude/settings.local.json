@@ -10,7 +10,10 @@
       "Bash(npx tsc:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(npx expo install:*)"
+      "Bash(npx expo install:*)",
+      "WebFetch(domain:supertokens.com)",
+      "Bash(npm uninstall:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
