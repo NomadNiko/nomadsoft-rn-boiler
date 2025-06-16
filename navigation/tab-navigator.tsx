@@ -51,7 +51,7 @@ export default function TabLayout({ navigation }: Props) {
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
               <ThemeToggle size={20} />
-              <HeaderButton onPress={() => navigation.navigate('TabNavigator', { screen: 'Profile' })} />
+              <HeaderButton onPress={() => navigation.navigate('TabNavigator' as never)} />
             </View>
           ),
         }}

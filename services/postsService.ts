@@ -136,9 +136,18 @@ class PostsService {
 
     const comment = await response.json();
 
-    // Note: We could update the post in cache here, but for simplicity
-    // we'll let the cache refresh naturally. In a production app, you might
-    // want to update the specific post's comments in all caches.
+    // Fetch the updated post with the new comment and update cache
+    try {
+      const updatedPostResponse = await authService.makeAuthenticatedRequest(`${this.API_BASE}/posts/${postId}`);
+      if (updatedPostResponse.ok) {
+        const updatedPost = await updatedPostResponse.json();
+        await postsCache.updatePost(updatedPost);
+        console.log('PostsService: Updated post cache with new comment');
+      }
+    } catch (error) {
+      console.error('PostsService: Failed to update post cache after comment:', error);
+      // Don't throw here - the comment was still added successfully
+    }
 
     return comment;
   }
