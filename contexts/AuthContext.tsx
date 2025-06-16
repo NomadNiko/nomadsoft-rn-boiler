@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import authService from '../services/authService';
+import postsService from '../services/postsService';
 
 interface User {
   id: string;
@@ -16,13 +18,21 @@ interface User {
   };
 }
 
+interface SocialStats {
+  postsCount: number;
+  commentsCount: number;
+  friendsCount: number;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: User | null;
+  socialStats: SocialStats;
   checkSession: () => Promise<void>;
   refreshUserData: () => Promise<void>;
   updateUser: (user: User) => void;
+  refreshSocialStats: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -32,14 +42,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [socialStats, setSocialStats] = useState<SocialStats>({
+    postsCount: 0,
+    commentsCount: 0,
+    friendsCount: 0,
+  });
 
   const checkSession = async () => {
     try {
       console.log('AuthContext: Starting session check');
       setIsLoading(true);
 
-      // Initialize auth service
+      // Initialize auth service and posts cache
       await authService.init();
+      await postsService.init();
 
       const sessionExists = await authService.checkSession();
       console.log('AuthContext: Session exists:', sessionExists);
@@ -51,8 +67,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userInfo = await authService.getCurrentUser();
         console.log('AuthContext: User info:', userInfo);
         setUser(userInfo);
+        
+        // Load cached social stats immediately
+        await loadCachedSocialStats();
+        
+        // Then fetch fresh social stats in the background
+        refreshSocialStats();
+        
+        // Preload posts data for all tabs
+        postsService.preloadAllTabs();
       } else {
         setUser(null);
+        setSocialStats({ postsCount: 0, commentsCount: 0, friendsCount: 0 });
       }
     } catch (error) {
       console.error('Error checking session:', error);
@@ -79,11 +105,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(user);
   };
 
+  const loadCachedSocialStats = async () => {
+    try {
+      const cachedStats = await AsyncStorage.getItem('socialStats');
+      if (cachedStats) {
+        const parsedStats = JSON.parse(cachedStats);
+        console.log('AuthContext: Loaded cached social stats:', parsedStats);
+        setSocialStats(parsedStats);
+      }
+    } catch (error) {
+      console.error('Error loading cached social stats:', error);
+    }
+  };
+
+  const saveSocialStats = async (stats: SocialStats) => {
+    try {
+      await AsyncStorage.setItem('socialStats', JSON.stringify(stats));
+      console.log('AuthContext: Saved social stats to cache:', stats);
+    } catch (error) {
+      console.error('Error saving social stats to cache:', error);
+    }
+  };
+
+  const refreshSocialStats = async () => {
+    try {
+      if (isAuthenticated) {
+        console.log('AuthContext: Refreshing social stats');
+        const stats = await authService.getSocialInfo();
+        if (stats) {
+          console.log('AuthContext: Received updated social stats:', stats);
+          setSocialStats(stats);
+          await saveSocialStats(stats);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing social stats:', error);
+    }
+  };
+
   const signOut = async () => {
     try {
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
+      // Clear cached social stats and posts on sign out
+      setSocialStats({ postsCount: 0, commentsCount: 0, friendsCount: 0 });
+      await AsyncStorage.removeItem('socialStats');
+      await postsService.clearCache();
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -99,9 +167,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthenticated,
         isLoading,
         user,
+        socialStats,
         checkSession,
         refreshUserData,
         updateUser,
+        refreshSocialStats,
         signOut,
       }}>
       {children}

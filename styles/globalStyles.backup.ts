@@ -164,6 +164,7 @@ export const components = {
     spaceY4: 'space-y-4',
     p1: 'p-1',
     p2: 'p-2',
+    p4: 'p-4',
     p6: 'p-6',
   },
 

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import authService from '../services/authService';
+import postsService from '../services/postsService';
 import {
   ScreenScroll,
   ProfileCard,
@@ -26,12 +27,17 @@ import {
 
 export default function ProfileScreen() {
   const { isDark } = useTheme();
-  const { signOut, user, updateUser, refreshUserData } = useAuth();
+  const { signOut, user, updateUser, refreshUserData, socialStats, refreshSocialStats } = useAuth();
   const theme = getThemeStyles(isDark);
   const [isUpdatingPhoto, setIsUpdatingPhoto] = React.useState(false);
   const [isEditExpanded, setIsEditExpanded] = React.useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [isPrivacyExpanded, setIsPrivacyExpanded] = React.useState(false);
+  const [isHidden, setIsHidden] = React.useState(false);
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = React.useState(false);
+  const [userPosts, setUserPosts] = React.useState<any[]>([]);
+  const [loadingPosts, setLoadingPosts] = React.useState(false);
   const [formData, setFormData] = React.useState({
     firstName: '',
     lastName: '',
@@ -42,6 +48,7 @@ export default function ProfileScreen() {
     firstName?: string;
     lastName?: string;
     email?: string;
+    username?: string;
   }>({});
 
   // Sync form data with user data
@@ -56,10 +63,115 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
+  // Refresh social stats, privacy status, and posts when profile screen becomes visible
+  React.useEffect(() => {
+    if (user) {
+      // Refresh social stats in the background to get latest data
+      refreshSocialStats();
+      // Fetch privacy status
+      fetchPrivacyStatus();
+      // Fetch user posts
+      fetchUserPosts();
+    }
+  }, [user]);
+
+  const fetchPrivacyStatus = async () => {
+    try {
+      const hidden = await authService.getHiddenStatus();
+      setIsHidden(hidden);
+    } catch (error) {
+      console.error('Failed to fetch privacy status:', error);
+    }
+  };
+
+  const handlePrivacyToggle = async () => {
+    setIsUpdatingPrivacy(true);
+    try {
+      const newHiddenStatus = !isHidden;
+      const success = await authService.setHiddenStatus(newHiddenStatus);
+      if (success) {
+        setIsHidden(newHiddenStatus);
+        Alert.alert(
+          'Privacy Updated',
+          newHiddenStatus 
+            ? 'Your posts are now hidden from All Users feed. Only friends can see your posts.' 
+            : 'Your posts are now visible in All Users feed.'
+        );
+      } else {
+        Alert.alert('Error', 'Failed to update privacy settings. Please try again.');
+      }
+    } catch (error) {
+      console.error('Privacy toggle error:', error);
+      Alert.alert('Error', 'Failed to update privacy settings. Please try again.');
+    } finally {
+      setIsUpdatingPrivacy(false);
+    }
+  };
+
+  const fetchUserPosts = async () => {
+    if (!user?.id) return;
+    
+    setLoadingPosts(true);
+    try {
+      const posts = await postsService.getPosts('mine');
+      setUserPosts(posts);
+    } catch (error) {
+      console.error('Failed to fetch user posts:', error);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  const renderPost = (post: any, index: number) => (
+    <Card key={post.id} className="mb-3">
+      <View className="p-4">
+        <H4 className="mb-2">{post.name}</H4>
+        <BodyText className={`${theme.colors.text.secondary} mb-2`} numberOfLines={3}>
+          {post.content}
+        </BodyText>
+        
+        {post.images && post.images.length > 0 && (
+          <View className="flex-row flex-wrap gap-2 mb-3">
+            {post.images.slice(0, 3).map((image: any, imgIndex: number) => (
+              <Image
+                key={imgIndex}
+                source={{ uri: image.path }}
+                className="w-20 h-20 rounded-lg"
+                resizeMode="cover"
+              />
+            ))}
+            {post.images.length > 3 && (
+              <View className="w-20 h-20 rounded-lg bg-gray-200 items-center justify-center">
+                <BodyText className="text-gray-600 text-xs">
+                  +{post.images.length - 3}
+                </BodyText>
+              </View>
+            )}
+          </View>
+        )}
+        
+        <Row className="justify-between items-center">
+          <BodyText className={`text-xs ${theme.colors.text.secondary}`}>
+            {formatDate(post.createdAt)}
+          </BodyText>
+          <BodyText className={`text-xs ${theme.colors.text.secondary}`}>
+            {post.comments?.length || 0} comments
+          </BodyText>
+        </Row>
+      </View>
+    </Card>
+  );
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await refreshUserData();
+      await refreshSocialStats();
     } catch (error) {
       console.error('Manual refresh error:', error);
     } finally {
@@ -82,6 +194,17 @@ export default function ProfileScreen() {
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
+    }
+
+    // Validate username (optional but if provided, must meet criteria)
+    if (formData.username.trim()) {
+      if (formData.username.trim().length < 3) {
+        newErrors.username = 'Username must be at least 3 characters long';
+      } else if (formData.username.trim().length > 20) {
+        newErrors.username = 'Username must be no more than 20 characters long';
+      } else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username.trim())) {
+        newErrors.username = 'Username can only contain letters, numbers, underscores, and hyphens';
+      }
     }
 
     setErrors(newErrors);
@@ -142,9 +265,9 @@ export default function ProfileScreen() {
   };
 
   const profileStats = [
-    { label: 'Projects', value: '12', icon: 'folder-outline' },
-    { label: 'Clients', value: '8', icon: 'people-outline' },
-    { label: 'Hours', value: '1.2k', icon: 'time-outline' },
+    { label: 'Posts', value: socialStats.postsCount.toString(), icon: 'document-text-outline' },
+    { label: 'Comments', value: socialStats.commentsCount.toString(), icon: 'chatbubble-outline' },
+    { label: 'Friends', value: socialStats.friendsCount.toString(), icon: 'people-outline' },
   ];
 
   const profileItems = [
@@ -307,6 +430,16 @@ export default function ProfileScreen() {
         }
       }
       setIsEditExpanded(!isEditExpanded);
+      // Close privacy section if it's open
+      if (isPrivacyExpanded) {
+        setIsPrivacyExpanded(false);
+      }
+    } else if (item.title === 'Privacy') {
+      setIsPrivacyExpanded(!isPrivacyExpanded);
+      // Close edit section if it's open
+      if (isEditExpanded) {
+        setIsEditExpanded(false);
+      }
     }
     // Handle other items here as needed
   };
@@ -321,7 +454,7 @@ export default function ProfileScreen() {
           colors={[theme.iconColors.primary]}
         />
       }>
-      <View className={layout.container.padded}>
+      <View className={components.responsive.cardContainer}>
         {/* Profile Header Card */}
         <ProfileCard>
           <TouchableOpacity
@@ -413,7 +546,8 @@ export default function ProfileScreen() {
                   </Row>
                   <Ionicons
                     name={
-                      item.title === 'Edit Profile' && isEditExpanded
+                      (item.title === 'Edit Profile' && isEditExpanded) ||
+                      (item.title === 'Privacy' && isPrivacyExpanded)
                         ? 'chevron-down'
                         : 'chevron-forward'
                     }
@@ -464,6 +598,9 @@ export default function ProfileScreen() {
                       autoCapitalize="none"
                       autoCorrect={false}
                     />
+                    {errors.username && (
+                      <ErrorText className={components.spacing.mt1}>{errors.username}</ErrorText>
+                    )}
                     <BodyText
                       className={`${components.spacing.mt1} text-xs ${theme.colors.text.secondary}`}>
                       Optional - this will be displayed as @{formData.username || 'username'}
@@ -502,24 +639,84 @@ export default function ProfileScreen() {
                 </View>
               )}
 
+              {/* Expandable Privacy Section */}
+              {item.title === 'Privacy' && isPrivacyExpanded && (
+                <View className={components.spacing.p4}>
+                  <View className={components.spacing.mb4}>
+                    <LabelText className={components.spacing.mb3}>Post Visibility</LabelText>
+                    <BodyText className={`${theme.colors.text.secondary} text-sm ${components.spacing.mb3}`}>
+                      Control who can see your posts in the main feed. When enabled, only your friends can see your posts.
+                    </BodyText>
+                    
+                    <TouchableOpacity
+                      onPress={handlePrivacyToggle}
+                      disabled={isUpdatingPrivacy}
+                      className={`flex-row items-center justify-between p-4 rounded-lg border ${
+                        isHidden ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50'
+                      } ${isDark ? 'bg-opacity-20' : ''}`}
+                    >
+                      <View className="flex-1">
+                        <BodyText className={`font-medium ${theme.colors.text.primary}`}>
+                          Hide from All Users feed
+                        </BodyText>
+                        <BodyText className={`text-sm ${theme.colors.text.secondary} mt-1`}>
+                          {isHidden 
+                            ? 'Your posts are only visible to friends' 
+                            : 'Your posts are visible to everyone'
+                          }
+                        </BodyText>
+                      </View>
+                      
+                      {isUpdatingPrivacy ? (
+                        <View className="h-6 w-6 ml-3">
+                          <View className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                        </View>
+                      ) : (
+                        <View className={`w-6 h-6 rounded border-2 ml-3 items-center justify-center ${
+                          isHidden 
+                            ? 'border-blue-500 bg-blue-500' 
+                            : 'border-gray-300'
+                        }`}>
+                          {isHidden && (
+                            <Ionicons name="checkmark" size={16} color="white" />
+                          )}
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
               {index < profileItems.length - 1 && <Divider />}
             </View>
           ))}
         </Card>
 
-        {/* Badge Examples */}
-        <Card>
-          <BodyText
-            className={`text-lg font-medium ${theme.colors.text.primary} ${components.spacing.mb3}`}>
-            Status Badges
-          </BodyText>
-          <Row className={`${components.utils.flexWrap} ${components.spacing.gap2}`}>
-            <Badge variant="indigo">Pro Member</Badge>
-            <Badge variant="purple">Verified</Badge>
-            <Badge variant="green">Active</Badge>
-            <Badge variant="yellow">2 Pending</Badge>
+        {/* User Posts */}
+        <View className="mb-6">
+          <Row className="justify-between items-center mb-4">
+            <H4>My Posts ({userPosts.length})</H4>
+            {loadingPosts && (
+              <View className="h-4 w-4">
+                <View className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+              </View>
+            )}
           </Row>
-        </Card>
+          
+          {userPosts.length > 0 ? (
+            <View>
+              {userPosts.map((post, index) => renderPost(post, index))}
+            </View>
+          ) : (
+            <Card>
+              <View className="p-8 items-center">
+                <BodyText className={`text-center ${theme.colors.text.secondary}`}>
+                  {loadingPosts ? 'Loading your posts...' : "You haven't posted anything yet"}
+                </BodyText>
+              </View>
+            </Card>
+          )}
+        </View>
       </View>
     </ScreenScroll>
   );

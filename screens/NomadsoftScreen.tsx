@@ -12,7 +12,7 @@ import { components } from '../styles/globalStyles';
 export default function NomadsoftScreen() {
   return (
     <ScreenCentered>
-      <View className="items-center p-6">
+      <View className={`${components.responsive.contentContainer} items-center py-6`}>
         <Image
           source={require('../assets/nomadsoft-black-centered.png')}
           className={components.image.logo}

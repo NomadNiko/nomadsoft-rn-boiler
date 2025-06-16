@@ -7,6 +7,7 @@ import { HeaderButton } from '../components/HeaderButton';
 import { TabBarIcon } from '../components/TabBarIcon';
 import ThemeToggle from '../components/ThemeToggle';
 import NomadsoftScreen from '../screens/NomadsoftScreen';
+import PostsScreen from '../screens/PostsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { useTheme } from '../contexts/ThemeContext';
 import { getThemeStyles } from '../styles/globalStyles';
@@ -50,7 +51,20 @@ export default function TabLayout({ navigation }: Props) {
           headerRight: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
               <ThemeToggle size={20} />
-              <HeaderButton onPress={() => navigation.navigate('NomadsoftTestPopup')} />
+              <HeaderButton onPress={() => navigation.navigate('TabNavigator', { screen: 'Profile' })} />
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Posts"
+        component={PostsScreen}
+        options={{
+          title: 'Posts',
+          tabBarIcon: ({ color }) => <TabBarIcon name="newspaper-outline" color={color} />,
+          headerRight: () => (
+            <View style={{ marginRight: 8 }}>
+              <ThemeToggle size={20} />
             </View>
           ),
         }}

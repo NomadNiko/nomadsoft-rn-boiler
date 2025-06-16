@@ -28,7 +28,7 @@ export default function NomadsoftTestPopup() {
   return (
     <>
       <Screen className={theme.colors.background.secondary}>
-        <View className="px-4 py-6">
+        <View className={`${components.responsive.cardContainer} py-6`}>
           {/* Modal Card */}
           <Modal>
             {/* Header */}

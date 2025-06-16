@@ -153,6 +153,22 @@ export const components = {
     p1: 'p-1',
   },
 
+  // Responsive containers
+  responsive: {
+    // Auth forms and content containers
+    formContainer: 'w-full max-w-md mx-auto px-6 sm:max-w-lg md:max-w-xl lg:max-w-2xl',
+    // Main content containers  
+    contentContainer: 'w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8',
+    // Profile and card containers
+    cardContainer: 'w-full max-w-2xl mx-auto px-4 sm:px-6',
+    // Posts and feed containers
+    feedContainer: 'w-full max-w-3xl mx-auto px-4 sm:px-6',
+    // Input field containers for forms
+    inputContainer: 'w-full sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto',
+    // Full width on mobile, constrained on larger screens
+    constrainedWidth: 'w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8',
+  },
+
   // Shadow styles
   shadow: {
     md: 'shadow-md',
@@ -164,6 +180,7 @@ export const components = {
     gap2: 'gap-2',
     gap3: 'gap-3',
     gap4: 'gap-4',
+    mt1: 'mt-1',
     mt2: 'mt-2',
     mt4: 'mt-4',
     mt6: 'mt-6',
@@ -171,8 +188,10 @@ export const components = {
     mb1: 'mb-1',
     mb2: 'mb-2',
     mb3: 'mb-3',
+    mb4: 'mb-4',
     mb6: 'mb-6',
     ml3: 'ml-3',
+    p4: 'p-4',
   },
 
   // Color palette demo

@@ -49,7 +49,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       if (!response.ok) {
@@ -73,28 +73,51 @@ class AuthService {
     email: string,
     password: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
+    username?: string
   ): Promise<any> {
     try {
+      const requestBody = {
+        email: email.trim(),
+        password,
+        firstName: (firstName || '').trim(),
+        lastName: (lastName || '').trim(),
+        username: (username || '').trim(),
+      };
+      
+      console.log('Registration request URL:', `${API_BASE}${API_ENDPOINTS.auth.register}`);
+      console.log('Registration request body:', requestBody);
+      
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.register}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-          firstName: firstName || '',
-          lastName: lastName || '',
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('Registration response status:', response.status);
+      console.log('Registration response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+        const errorText = await response.text();
+        console.log('Registration error response text:', errorText);
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.message || 'Registration failed');
+        } catch (parseError) {
+          throw new Error(`Registration failed with status ${response.status}: ${errorText}`);
+        }
       }
 
-      return await response.json();
+      const responseText = await response.text();
+      console.log('Registration success response:', responseText);
+      
+      if (responseText) {
+        return JSON.parse(responseText);
+      }
+      return {};
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -209,6 +232,49 @@ class AuthService {
     }
   }
 
+  // Helper method for making authenticated requests with automatic token refresh
+  async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+    if (!this.token) {
+      throw new Error('No authentication token available');
+    }
+
+    // First attempt with current token
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+      Authorization: `Bearer ${this.token}`,
+    };
+
+    let response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    // If unauthorized, try refreshing token once
+    if (response.status === 401) {
+      console.log('Auth request failed, attempting token refresh...');
+      const refreshed = await this.refreshAccessToken();
+      
+      if (refreshed) {
+        console.log('Token refreshed successfully, retrying request...');
+        // Retry with new token
+        const newHeaders = {
+          ...headers,
+          Authorization: `Bearer ${this.token}`,
+        };
+        
+        response = await fetch(url, {
+          ...options,
+          headers: newHeaders,
+        });
+      } else {
+        console.log('Token refresh failed');
+      }
+    }
+
+    return response;
+  }
+
   async checkSession(): Promise<boolean> {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -306,7 +372,16 @@ class AuthService {
         throw new Error('Not authenticated');
       }
 
-      console.log('Updating profile with:', JSON.stringify(updates, null, 2));
+      // Trim string fields to remove trailing spaces
+      const trimmedUpdates = {
+        ...updates,
+        ...(updates.firstName !== undefined && { firstName: updates.firstName.trim() }),
+        ...(updates.lastName !== undefined && { lastName: updates.lastName.trim() }),
+        ...(updates.username !== undefined && { username: updates.username.trim() }),
+        ...(updates.email !== undefined && { email: updates.email.trim() }),
+      };
+
+      console.log('Updating profile with:', JSON.stringify(trimmedUpdates, null, 2));
 
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.me}`, {
         method: 'PATCH',
@@ -314,7 +389,7 @@ class AuthService {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.token}`,
         },
-        body: JSON.stringify(updates),
+        body: JSON.stringify(trimmedUpdates),
       });
 
       console.log('Profile update response status:', response.status);
@@ -331,6 +406,254 @@ class AuthService {
     } catch (error) {
       console.error('Profile update error:', error);
       throw error;
+    }
+  }
+
+  async getSocialInfo(): Promise<{ postsCount: number; commentsCount: number; friendsCount: number } | null> {
+    try {
+      if (!this.token) {
+        return null;
+      }
+
+      const response = await fetch(`${API_BASE}/social/info`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Try to refresh token
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            // Retry with new token
+            return this.getSocialInfo();
+          }
+        }
+        return null;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get social info error:', error);
+      return null;
+    }
+  }
+
+
+  async getUserPosts(userId: string): Promise<any[]> {
+    try {
+      if (!this.token) {
+        return [];
+      }
+
+      const response = await fetch(`${API_BASE}/posts/by-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ userIds: [userId] }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.getUserPosts(userId);
+          }
+        }
+        return [];
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get user posts error:', error);
+      return [];
+    }
+  }
+
+  async getFriendsList(): Promise<User[]> {
+    try {
+      if (!this.token) {
+        return [];
+      }
+
+      const response = await fetch(`${API_BASE}/social/friends`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.getFriendsList();
+          }
+        }
+        return [];
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get friends list error:', error);
+      return [];
+    }
+  }
+
+  async addFriend(friendId: string): Promise<boolean> {
+    try {
+      if (!this.token) {
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE}/social/friends`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ friendId }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.addFriend(friendId);
+          }
+        }
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Add friend error:', error);
+      return false;
+    }
+  }
+
+  async removeFriend(friendId: string): Promise<boolean> {
+    try {
+      if (!this.token) {
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE}/social/friends/${friendId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.removeFriend(friendId);
+          }
+        }
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Remove friend error:', error);
+      return false;
+    }
+  }
+
+  async getFriendsCount(userId: string): Promise<number> {
+    try {
+      const response = await fetch(`${API_BASE}/public/users/${userId}/friends-count`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Failed to get friends count:', response.status);
+        return 0;
+      }
+
+      const data = await response.json();
+      return data.friendsCount || 0;
+    } catch (error) {
+      console.error('Get friends count error:', error);
+      return 0;
+    }
+  }
+
+  async getHiddenStatus(): Promise<boolean> {
+    try {
+      if (!this.token) {
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE}/hidden-users/status`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.getHiddenStatus();
+          }
+        }
+        return false;
+      }
+
+      const data = await response.json();
+      return data.isHidden || false;
+    } catch (error) {
+      console.error('Get hidden status error:', error);
+      return false;
+    }
+  }
+
+  async setHiddenStatus(hidden: boolean): Promise<boolean> {
+    try {
+      if (!this.token) {
+        return false;
+      }
+
+      const endpoint = hidden ? `${API_BASE}/hidden-users/hide` : `${API_BASE}/hidden-users/hide`;
+      const method = hidden ? 'POST' : 'DELETE';
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            return this.setHiddenStatus(hidden);
+          }
+        }
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Set hidden status error:', error);
+      return false;
     }
   }
 

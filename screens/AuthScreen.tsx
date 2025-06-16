@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { getThemeStyles } from '../styles/globalStyles';
+import { getThemeStyles, components } from '../styles/globalStyles';
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/authService';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -32,6 +32,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -44,9 +47,31 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       return;
     }
 
-    if (isSignUp && password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+    if (isSignUp) {
+      if (!firstName || !lastName || !username) {
+        Alert.alert('Error', 'Please fill in your first name, last name, and username');
+        return;
+      }
+      
+      // Validate username
+      const trimmedUsername = username.trim();
+      if (trimmedUsername.length < 3) {
+        Alert.alert('Error', 'Username must be at least 3 characters long');
+        return;
+      }
+      if (trimmedUsername.length > 20) {
+        Alert.alert('Error', 'Username must be no more than 20 characters long');
+        return;
+      }
+      if (!/^[a-zA-Z0-9_-]+$/.test(trimmedUsername)) {
+        Alert.alert('Error', 'Username can only contain letters, numbers, underscores, and hyphens');
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -55,17 +80,33 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       console.log('AuthScreen: Starting auth process, isSignUp:', isSignUp);
       if (isSignUp) {
         console.log('AuthScreen: Calling register');
-        // For now, we'll show a message about registration
-        Alert.alert(
-          'Registration',
-          'Please sign up on our website first, then use the app to log in.',
-          [{ text: 'OK' }]
-        );
-        // In a full implementation, you'd call:
-        // await authService.register(email, password);
+        try {
+          await authService.register(email.trim(), password, firstName.trim(), lastName.trim(), username.trim());
+          console.log('AuthScreen: Registration successful, attempting auto-login');
+          
+          // Auto-login after successful registration (following Mantine boilerplate pattern)
+          const loginResponse = await authService.login(email.trim(), password);
+          console.log('AuthScreen: Auto-login after registration successful:', loginResponse);
+          
+          if (loginResponse.token) {
+            console.log('AuthScreen: Auto-login successful, checking session');
+            await checkSession();
+            console.log('AuthScreen: Session check completed');
+          } else {
+            // If auto-login fails, show success message and switch to sign in
+            Alert.alert(
+              'Success',
+              'Account created successfully! Please sign in to continue.',
+              [{ text: 'OK', onPress: () => setIsSignUp(false) }]
+            );
+          }
+        } catch (registerError) {
+          console.log('Registration failed:', registerError);
+          throw registerError;
+        }
       } else {
         console.log('AuthScreen: Calling login');
-        const response = await authService.login(email, password);
+        const response = await authService.login(email.trim(), password);
         console.log('AuthScreen: Login response:', response);
 
         if (response.token) {
@@ -77,7 +118,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Auth error:', error);
-      Alert.alert('Error', 'An unexpected error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +180,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           className="flex-1">
-          <View className="flex-1 justify-center px-6">
+          <View className="flex-1 justify-center">
+            <View className={components.responsive.formContainer}>
             <View className="mb-8">
               <Text
                 className={`mb-2 text-center font-oxanium-bold text-3xl ${themeStyles.colors.text.primary}`}>
@@ -153,6 +196,73 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
             </View>
 
             <View className="space-y-4">
+              {isSignUp && (
+                <>
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      First Name
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Enter your first name"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      Last Name
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Enter your last name"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={lastName}
+                      onChangeText={setLastName}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      Username
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Enter your username"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={username}
+                      onChangeText={setUsername}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                </>
+              )}
+
               <View>
                 <Text
                   className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
@@ -194,6 +304,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="off"
+                    textContentType="none"
+                    passwordRules=""
                   />
                   <TouchableOpacity
                     className="absolute right-4 top-1/2 -translate-y-1/2"
@@ -228,6 +342,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                       onChangeText={setConfirmPassword}
                       secureTextEntry={!showConfirmPassword}
                       autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="off"
+                      textContentType="none"
+                      passwordRules=""
                     />
                     <TouchableOpacity
                       className="absolute right-4 top-1/2 -translate-y-1/2"
@@ -294,6 +412,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     setEmail('');
                     setPassword('');
                     setConfirmPassword('');
+                    setFirstName('');
+                    setLastName('');
+                    setUsername('');
                   }}>
                   <Text
                     className={`font-oxanium-semibold ${isDark ? 'text-purple-400' : 'text-indigo-600'}`}>
@@ -301,6 +422,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
             </View>
           </View>
         </ScrollView>
