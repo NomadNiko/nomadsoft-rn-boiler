@@ -6,7 +6,8 @@ export const API_CONFIG = {
 
 export const API_ENDPOINTS = {
   auth: {
-    login: '/auth/email/login',
+    login: '/auth/login',
+    emailLogin: '/auth/email/login',
     register: '/auth/email/register',
     googleLogin: '/auth/google/login',
     facebookLogin: '/auth/facebook/login',

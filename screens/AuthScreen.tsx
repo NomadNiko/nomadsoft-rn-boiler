@@ -29,9 +29,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const { isDark } = useTheme();
   const { checkSession } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,14 +42,20 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const themeStyles = getThemeStyles(isDark);
 
   const handleAuth = async () => {
-    if (!email || !password) {
+    if (!emailOrUsername || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    if (isSignUp && password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+    if (isSignUp) {
+      if (!firstName || !lastName) {
+        Alert.alert('Error', 'Please fill in your first and last name');
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -55,17 +64,20 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       console.log('AuthScreen: Starting auth process, isSignUp:', isSignUp);
       if (isSignUp) {
         console.log('AuthScreen: Calling register');
-        // For now, we'll show a message about registration
-        Alert.alert(
-          'Registration',
-          'Please sign up on our website first, then use the app to log in.',
-          [{ text: 'OK' }]
-        );
-        // In a full implementation, you'd call:
-        // await authService.register(email, password);
+        await authService.register(emailOrUsername, password, firstName, lastName, username);
+        // After successful registration, automatically log the user in
+        console.log('AuthScreen: Registration successful, logging in...');
+        const response = await authService.login(emailOrUsername, password);
+        console.log('AuthScreen: Login response:', response);
+
+        if (response.token) {
+          console.log('AuthScreen: Login successful, checking session');
+          await checkSession();
+          console.log('AuthScreen: Session check completed');
+        }
       } else {
         console.log('AuthScreen: Calling login');
-        const response = await authService.login(email, password);
+        const response = await authService.login(emailOrUsername, password);
         console.log('AuthScreen: Login response:', response);
 
         if (response.token) {
@@ -156,7 +168,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               <View>
                 <Text
                   className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
-                  Email
+                  {isSignUp ? 'Email' : 'Email or Username'}
                 </Text>
                 <TextInput
                   className={`rounded-2xl px-4 py-4 text-base leading-6 ${
@@ -165,15 +177,82 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                       : 'border-gray-200 bg-gray-100 text-gray-900'
                   } border`}
                   style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
-                  placeholder="Enter your email"
+                  placeholder={isSignUp ? 'Enter your email' : 'Enter email or username'}
                   placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
+                  value={emailOrUsername}
+                  onChangeText={setEmailOrUsername}
+                  keyboardType={isSignUp ? 'email-address' : 'default'}
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
               </View>
+
+              {isSignUp && (
+                <>
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      First Name
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Enter your first name"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      Last Name
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Enter your last name"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={lastName}
+                      onChangeText={setLastName}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  <View>
+                    <Text
+                      className={`mb-2 font-oxanium-medium text-sm ${themeStyles.colors.text.primary}`}>
+                      Username (Optional)
+                    </Text>
+                    <TextInput
+                      className={`rounded-2xl px-4 py-4 text-base leading-6 ${
+                        isDark
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-200 bg-gray-100 text-gray-900'
+                      } border`}
+                      style={{ minHeight: 50, fontFamily: 'Oxanium-Regular' }}
+                      placeholder="Choose a username (3-20 characters)"
+                      placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                      value={username}
+                      onChangeText={setUsername}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+                </>
+              )}
 
               <View>
                 <Text
@@ -291,9 +370,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                 <TouchableOpacity
                   onPress={() => {
                     setIsSignUp(!isSignUp);
-                    setEmail('');
+                    setEmailOrUsername('');
                     setPassword('');
                     setConfirmPassword('');
+                    setFirstName('');
+                    setLastName('');
+                    setUsername('');
                   }}>
                   <Text
                     className={`font-oxanium-semibold ${isDark ? 'text-purple-400' : 'text-indigo-600'}`}>

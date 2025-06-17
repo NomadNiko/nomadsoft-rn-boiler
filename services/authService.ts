@@ -42,14 +42,14 @@ class AuthService {
     this.refreshToken = await AsyncStorage.getItem('refreshToken');
   }
 
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(emailOrUsername: string, password: string): Promise<LoginResponse> {
     try {
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.login}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ login: emailOrUsername, password }),
       });
 
       if (!response.ok) {
@@ -73,7 +73,8 @@ class AuthService {
     email: string,
     password: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
+    username?: string
   ): Promise<any> {
     try {
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.register}`, {
@@ -86,6 +87,7 @@ class AuthService {
           password,
           firstName: firstName || '',
           lastName: lastName || '',
+          ...(username && { username }),
         }),
       });
 
