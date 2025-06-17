@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a React Native Expo boilerplate using TypeScript and NativeWind (Tailwind CSS for React Native). It's set up as a managed Expo workflow with support for iOS, Android, and Web platforms.
+This is a React Native Expo boilerplate using TypeScript and NativeWind (Tailwind CSS for React Native). It's set up as a managed Expo workflow with support for iOS, Android, and Web platforms. The app integrates with a custom NestJS backend for authentication and user management.
 
 ## Essential Commands
 
@@ -33,34 +33,83 @@ npm run format
 
 ## Architecture Overview
 
+### Backend Integration
+- **API Base URL**: `https://cdserver.nomadsoft.us/api/v1`
+- **Authentication**: JWT-based with refresh tokens
+- **Test Credentials**: `aloha@ixplor.app:password`
+- **File Upload**: Two-step process (upload file → update profile)
+- **Image Processing**: Automatically resizes images to 512x512px to avoid server limits
+
+### Authentication System
+The app uses a custom JWT authentication system replacing SuperTokens:
+- **AuthService** (`/services/authService.ts`): Handles all API communication
+- **AuthContext** (`/contexts/AuthContext.tsx`): Manages authentication state
+- **Token Storage**: Uses AsyncStorage for persistence with automatic refresh
+- **Cross-device Sync**: Manual refresh when editing profile to ensure latest data
+
 ### Navigation Structure
-The app uses React Navigation with a bottom tab navigator as the root, containing:
-- **Home Tab**: Stack navigator with NomadsoftScreen as the main screen
-- **Profile Tab**: ProfileScreen
-- Modal presentations are handled via the root stack navigator
+The app uses React Navigation with conditional rendering based on auth state:
+- **Authenticated**: Bottom tab navigator (Nomadsoft/Profile tabs)
+- **Unauthenticated**: AuthScreen for login/registration
+- **Modal Presentations**: Handled via root stack navigator
 
 ### Component Organization
-- `/components`: Reusable UI components with TypeScript interfaces
-  - Each component exports both the component and its props interface
-  - Components use NativeWind classes for styling
+- `/components/styled`: Reusable UI components with consistent theming
+  - Exports themed components (Card, Input, Button, etc.)
+  - Automatic dark/light mode support
+  - TypeScript interfaces for all props
 - `/screens`: Screen-level components that compose smaller components
 - `/navigation`: Navigation configuration and type definitions
+- `/config`: API configuration and endpoints
+
+### Profile Management
+The ProfileScreen implements comprehensive profile editing:
+- **Photo Upload**: Camera/library selection with automatic resizing
+- **Expandable Forms**: Inline editing within existing card UI (no modals)
+- **Real-time Validation**: Form validation with immediate error feedback
+- **Smart Refresh**: Fetches fresh data from server when editing begins
+- **Cross-device Sync**: Pull-to-refresh and automatic refresh on edit
 
 ### Styling Approach
-- Uses NativeWind (Tailwind CSS for React Native) with a custom configuration
+- Uses NativeWind (Tailwind CSS for React Native) with custom configuration
 - Global styles defined in `global.css`
-- Component styles use className prop with Tailwind utility classes
-- Custom colors defined in `tailwind.config.js` (e.g., `bgtabs`, `texttabs`)
+- Styled components in `/components/styled/index.tsx` with theme integration
+- Dark/light mode support via ThemeContext
+- Custom colors defined in `tailwind.config.js`
 
-### TypeScript Configuration
-- Strict mode enabled
-- Path aliases configured (@/ for root directory)
-- Proper typing for navigation using React Navigation's TypeScript support
+### Key Technical Patterns
+- **Form Management**: Pre-filled forms with useEffect syncing to user data
+- **State Updates**: Direct context updates (updateUser) to prevent navigation issues
+- **Error Handling**: Comprehensive try/catch with user-friendly alerts
+- **Loading States**: Visual feedback for all async operations
+- **Image Handling**: expo-image-manipulator for resizing before upload
 
 ## Key Technical Details
 
 - **Expo SDK**: Version 53
 - **No testing framework**: Tests need to be set up if required
-- **Image handling**: Uses Expo's Image component for optimized loading
-- **Safe areas**: Implemented using react-native-safe-area-context
-- **Custom fonts**: Set up to use system fonts with fallbacks
+- **Image Libraries**: expo-image-picker, expo-image-manipulator
+- **Storage**: @react-native-async-storage/async-storage for tokens
+- **Navigation**: @react-navigation/native with bottom-tabs and stack
+- **Safe Areas**: react-native-safe-area-context
+- **Fonts**: Oxanium font family with system fallbacks
+
+## Important Implementation Notes
+
+### Authentication Flow
+1. User logs in → tokens stored in AsyncStorage
+2. AuthContext manages authentication state
+3. Automatic token refresh on API calls
+4. Manual user data refresh when needed (not automatic to avoid loops)
+
+### Profile Updates
+1. Always refresh user data from server before editing
+2. Two-step file upload: upload file → update profile with file reference
+3. Direct context updates prevent navigation side effects
+4. Form validation with real-time error clearing
+
+### Common Pitfalls to Avoid
+- Do NOT use automatic session checking in focus effects (causes infinite loops)
+- Do NOT call checkSession() after profile updates (use updateUser() instead)
+- Always resize images before upload to prevent 413 errors
+- Refresh user data before opening edit forms for cross-device consistency

@@ -15,7 +15,7 @@ export const Button = forwardRef<View, ButtonProps>(
 
     return (
       <TouchableOpacity ref={ref} {...touchableProps} className={buttonClass}>
-        {children || <Text className="text-center font-semibold text-white">{title}</Text>}
+        {children || <Text className="text-center font-oxanium-semibold text-white">{title}</Text>}
       </TouchableOpacity>
     );
   }

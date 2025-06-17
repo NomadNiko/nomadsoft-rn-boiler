@@ -11,7 +11,17 @@ module.exports = {
 
   presets: [require('nativewind/preset')],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Oxanium-Regular'],
+        'oxanium-light': ['Oxanium-Light'],
+        'oxanium-regular': ['Oxanium-Regular'],
+        'oxanium-medium': ['Oxanium-Medium'],
+        'oxanium-semibold': ['Oxanium-SemiBold'],
+        'oxanium-bold': ['Oxanium-Bold'],
+        'oxanium-extrabold': ['Oxanium-ExtraBold'],
+      },
+    },
   },
   plugins: [],
 };

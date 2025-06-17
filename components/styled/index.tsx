@@ -247,19 +247,20 @@ export const SmallButton = ({
 };
 
 // Inputs
-export const Input = ({ className = '', ...props }: TextInputProps) => {
+export const Input = ({ className = '', style, ...props }: TextInputProps) => {
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   return (
     <TextInput
       placeholderTextColor={theme.placeholderColor}
       className={`${components.input.base} ${components.input.bordered} ${theme.colors.background.primary} ${theme.colors.border.secondary} ${theme.colors.text.primary} ${className}`}
+      style={[{ fontFamily: 'Oxanium-Regular' }, style]}
       {...props}
     />
   );
 };
 
-export const FilledInput = ({ className = '', ...props }: TextInputProps) => {
+export const FilledInput = ({ className = '', style, ...props }: TextInputProps) => {
   const { isDark } = useTheme();
   const theme = getThemeStyles(isDark);
   const bgColor = isDark ? 'bg-gray-700' : 'bg-gray-100';
@@ -267,6 +268,7 @@ export const FilledInput = ({ className = '', ...props }: TextInputProps) => {
     <TextInput
       placeholderTextColor={theme.placeholderColor}
       className={`${components.input.base} ${bgColor} ${theme.colors.text.primary} ${className}`}
+      style={[{ fontFamily: 'Oxanium-Regular' }, style]}
       {...props}
     />
   );

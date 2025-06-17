@@ -15,18 +15,18 @@ export const layout = {
 // Typography styles
 export const typography = {
   heading: {
-    h2: 'text-2xl font-semibold',
-    h3: 'text-3xl font-bold',
-    h4: 'text-xl font-semibold',
+    h2: 'text-2xl font-oxanium-semibold',
+    h3: 'text-3xl font-oxanium-bold',
+    h4: 'text-xl font-oxanium-semibold',
   },
   body: {
-    base: 'text-base',
-    lg: 'text-lg',
-    sm: 'text-sm',
+    base: 'text-base font-oxanium-regular',
+    lg: 'text-lg font-oxanium-regular',
+    sm: 'text-sm font-oxanium-regular',
   },
   weight: {
-    medium: 'font-medium',
-    semibold: 'font-semibold',
+    medium: 'font-oxanium-medium',
+    semibold: 'font-oxanium-semibold',
   },
 };
 

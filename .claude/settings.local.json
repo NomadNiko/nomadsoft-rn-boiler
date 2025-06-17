@@ -7,7 +7,16 @@
       "Bash(npm run format:*)",
       "Bash(find:*)",
       "Bash(rg:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(npx expo install:*)",
+      "WebFetch(domain:supertokens.com)",
+      "Bash(npm uninstall:*)",
+      "Bash(rm:*)",
+      "Bash(sudo chown:*)",
+      "Bash(npm start)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

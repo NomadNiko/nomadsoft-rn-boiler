@@ -28,10 +28,18 @@ export default function TabLayout({ navigation }: Props) {
           backgroundColor: theme.navigationColors.tabBarBackground,
           borderTopColor: theme.navigationColors.tabBarBorder,
         },
+        tabBarLabelStyle: {
+          fontFamily: 'Oxanium-Medium',
+          fontSize: 12,
+        },
         headerStyle: {
           backgroundColor: theme.navigationColors.headerBackground,
         },
         headerTintColor: theme.navigationColors.headerTint,
+        headerTitleStyle: {
+          fontFamily: 'Oxanium-SemiBold',
+          fontSize: 18,
+        },
       }}>
       <Tab.Screen
         name="Nomadsoft"
