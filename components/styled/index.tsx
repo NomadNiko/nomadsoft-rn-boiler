@@ -142,7 +142,7 @@ export const ProfileCard = ({ children, className = '', ...props }: ViewProps) =
   const theme = getThemeStyles(isDark);
   return (
     <View
-      className={`${components.container.profileCard} ${theme.colors.background.secondary} ${components.shadow.xl} ${className}`}
+      className={`${components.container.profileCard} ${theme.colors.background.primary} ${components.shadow.xl} ${className}`}
       {...props}>
       {children}
     </View>

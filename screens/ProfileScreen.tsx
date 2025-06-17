@@ -309,7 +309,7 @@ export default function ProfileScreen() {
           colors={[theme.iconColors.primary]}
         />
       }>
-      <View className={layout.container.padded}>
+      <View className="px-4 pt-1 pb-6">
         {/* Profile Header Card */}
         <ProfileCard>
           <TouchableOpacity
@@ -464,7 +464,7 @@ export default function ProfileScreen() {
                   </View>
 
                   {/* Action Buttons */}
-                  <Row className={components.spacing.gap3}>
+                  <Row className={`${components.spacing.gap3} ${components.spacing.mt6}`}>
                     <View className="flex-1">
                       <OutlineButton onPress={handleCancelEdit} disabled={isUpdatingProfile}>
                         Cancel
@@ -476,6 +476,9 @@ export default function ProfileScreen() {
                       </PrimaryButton>
                     </View>
                   </Row>
+                  
+                  {/* Additional spacing after buttons */}
+                  <View className={components.spacing.mt6} />
                 </View>
               )}
 

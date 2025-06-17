@@ -164,6 +164,7 @@ export const components = {
     gap2: 'gap-2',
     gap3: 'gap-3',
     gap4: 'gap-4',
+    mt1: 'mt-1',
     mt2: 'mt-2',
     mt4: 'mt-4',
     mt6: 'mt-6',
@@ -171,8 +172,10 @@ export const components = {
     mb1: 'mb-1',
     mb2: 'mb-2',
     mb3: 'mb-3',
+    mb4: 'mb-4',
     mb6: 'mb-6',
     ml3: 'ml-3',
+    p4: 'p-4',
   },
 
   // Color palette demo
